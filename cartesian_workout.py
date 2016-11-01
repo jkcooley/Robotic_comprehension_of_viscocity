@@ -21,7 +21,7 @@ def cartesian_pose_client(position, orientation):
     client = actionlib.SimpleActionClient(action_address, jaco_msgs.msg.ArmPoseAction)
     client.wait_for_server()
 
-    goal = jaco_msgs.msg.ArmPoseGoal()
+    goal = jaco_msgs.msg.ArmPoseGoal() #it just says ArmPose on the ros site... does that matter?
     goal.pose.header = std_msgs.msg.Header(frame_id=(str(sys.argv[1]) + '_api_origin'))
     goal.pose.pose.position = geometry_msgs.msg.Point(
         x=position[0], y=position[1], z=position[2])
@@ -65,6 +65,7 @@ if __name__ == '__main__':
         for pos, orient in poses:
             print('    position: {},  orientation: {}'.format(pos, orient))
             result = cartesian_pose_client(pos, orient)
+	    print('result %d', result)
 
         print('Done!')
 
