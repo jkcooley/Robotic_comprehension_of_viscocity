@@ -1,4 +1,4 @@
-//tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
+i//tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -86,6 +86,27 @@ void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_po
 	while(
 }
 
+
+//from https://github.com/utexas-bwi/segbot_arm/blob/experiments/object_exploration/object_exploration/src/interact_arm.cpp 
+//completely unchanged... should probably fix that
+bool goToLocation(sensor_msgs::JointState js){
+	moveit_utils::AngularVelCtrl srv;
+	srv.request.state = js;
+	actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
+	jaco_msgs::ArmJointAnglesGoal goal;
+	goal.angles.joint1 = js.position[0];
+	goal.angles.joint2 = js.position[1];
+	goal.angles.joint3 = js.position[2];
+	goal.angles.joint4 = js.position[3];
+	goal.angles.joint5 = js.position[4];
+	goal.angles.joint6 = js.position[5];
+	//ROS_INFO("Joint6: %f", fromFile.position[5]);
+	ac.waitForServer();
+	ac.sendGoal(goal);
+	ROS_INFO("Trajectory goal sent");
+	ac.waitForResult();
+}
+
 //call functions to get data
 int main(int argc, char **argv)
 {
@@ -107,7 +128,9 @@ int main(int argc, char **argv)
 
 
 	//this is the part where it goes to the position we want it in
-	
+	goToLocation(joint_state);		
+
+
 	//get into the correct position to accept the spoon - look at homing tutorial
 	//ask for user confirmation that the spoon has been inserted properly - look at "press enter" part of arm tutorials
 	//get into the correct position to go up and down - should be similar to spoon one
