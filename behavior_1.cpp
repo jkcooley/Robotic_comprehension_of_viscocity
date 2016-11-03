@@ -1,7 +1,7 @@
 //tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
