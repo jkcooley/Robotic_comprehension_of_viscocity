@@ -1,14 +1,14 @@
-i//tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
+//tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <sensor_msgs/jointState.h>
+#include <sensor_msgs/JointState.h>
 #include <actionlib/client/simple_action_client.h>
 //#include <jaco_msgs/FingerPosition.h>
-#include <jaco_ros/jaco_arm_driver.h>
+//#include <jaco_ros/jaco_arm_driver.h>
 #include <jaco_msgs/HomeArm.h>
 #include <segbot_arm_manipulation/arm_utils.h>
 
@@ -32,7 +32,7 @@ bool heard_finger_pose;
 ros::Publisher velocity_pub;
 
 //callback function for joint state
-void joint_state_callback(const sensor_msgs::JointStateConstPtr& message)
+void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 {
 	//if data from all the joints has been recieved, set joint_state and heard_state accordingly
 	if (message->position.size() == JOINTS)
@@ -44,14 +44,14 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr& message)
 
 //PoseStampedConstPtr& message or just PoseStamped &message
 //callback function for stamped position
-void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr& message)
+void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr &message)
 {
 	pose_stamped = *message;
         heard_pose_stamped = true;
 }
 
 //callback function for finger position
-void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr& message)
+void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr &message)
 {
 	finger_pose = *message;
         heard_finger_pose = true;
@@ -89,17 +89,17 @@ void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_po
 
 //from https://github.com/utexas-bwi/segbot_arm/blob/experiments/object_exploration/object_exploration/src/interact_arm.cpp 
 //completely unchanged... should probably fix that
-bool goToLocation(sensor_msgs::JointState js){
-	moveit_utils::AngularVelCtrl srv;
-	srv.request.state = js;
+bool goToLocation(float position[]){
+//	moveit_utils::AngularVelCtrl srv;
+//	srv.request.state = js;
 	actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
 	jaco_msgs::ArmJointAnglesGoal goal;
-	goal.angles.joint1 = js.position[0];
-	goal.angles.joint2 = js.position[1];
-	goal.angles.joint3 = js.position[2];
-	goal.angles.joint4 = js.position[3];
-	goal.angles.joint5 = js.position[4];
-	goal.angles.joint6 = js.position[5];
+	goal.angles.joint1 = position[0];
+	goal.angles.joint2 = position[1];
+	goal.angles.joint3 = position[2];
+	goal.angles.joint4 = position[3];
+	goal.angles.joint5 = position[4];
+	goal.angles.joint6 = position[5];
 	//ROS_INFO("Joint6: %f", fromFile.position[5]);
 	ac.waitForServer();
 	ac.sendGoal(goal);
@@ -126,20 +126,20 @@ int main(int argc, char **argv)
 	//get the states from the arm
 	get_data();
 
-	sensor_msgs::JointState desired_state = 
+//	sensor_msgs::JointState desired_state = 
 
 	
-	string header[] =  {"seq: 600", "stamp: 1477074469.341749274", "frame_id:"};
-	string name[] = {mico_joint_1, mico_joint_2, mico_joint_3, mico_joint_4, mico_joint_5, mico_joint_6, mico_joint_finger_1, mico_joint_finger_2};
-	float64 position[] = {0.662198, -0.765186, -0.281049, -0.650929, 2.023, 2.35381, -0.00084, -0.00084};
-	float64 velocity[] = {0, 0, 0, 0, 0, 0, 0, 0};
-	float64 effort[] = {6.08548e+14, 1.22894e-26, -2.03711e-18, 4.59149e-41, -2.03711e-18, 4.59149e-41, 0, 0};
+//	string header[] =  {"seq: 600", "stamp: 1477074469.341749274", "frame_id:"};
+//	string name[] = {mico_joint_1, mico_joint_2, mico_joint_3, mico_joint_4, mico_joint_5, mico_joint_6, mico_joint_finger_1, mico_joint_finger_2};
+	float position[] = {0.662198, -0.765186, -0.281049, -0.650929, 2.023, 2.35381, -0.00084, -0.00084};
+//	float64 velocity[] = {0, 0, 0, 0, 0, 0, 0, 0};
+//	float64 effort[] = {6.08548e+14, 1.22894e-26, -2.03711e-18, 4.59149e-41, -2.03711e-18, 4.59149e-41, 0, 0};
 
 
 
  
 	//this is the part where it goes to the position we want it in
-	goToLocation(joint_state);		
+	goToLocation(position);		
 
 
 	//get into the correct position to accept the spoon - look at homing tutorial

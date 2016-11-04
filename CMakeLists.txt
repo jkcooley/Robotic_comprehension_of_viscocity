@@ -1,1 +1,70 @@
-//the CMakeList
+cmake_minimum_required(VERSION 2.8.3)
+project(robotic_comprehension_of_viscosity)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+  jaco_msgs
+  moveit_msgs
+  roscpp
+  rospy
+  std_msgs
+  actionlib_msgs
+  actionlib
+  moveit_ros_planning_interface
+  moveit_utils
+  moveit_msgs
+  nav_msgs
+  move_base_msgs
+  segbot_arm_perception
+  segbot_arm_manipulation
+  pcl_ros
+  pcl_conversions
+  bwi_msgs
+)
+
+
+###################################
+## catkin specific configuration ##
+###################################
+## The catkin_package macro generates cmake config files for your package
+## Declare things to be passed to dependent projects
+## INCLUDE_DIRS: uncomment this if you package contains header files
+## LIBRARIES: libraries you create in this project that dependent projects also need
+## CATKIN_DEPENDS: catkin_packages dependent projects also need
+## DEPENDS: system dependencies of this project that dependent projects also need
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES segbot_arm_tasks
+#  CATKIN_DEPENDS jaco_msgs moveit_msgs roscpp rospy std_msgs
+#  DEPENDS system_lib
+   CATKIN_DEPENDS actionlib_msgs
+)
+
+###########
+## Build ##
+###########
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+# include_directories(include)
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
+
+## executables
+
+add_executable(behavior_1 src/behavior_1.cpp)
+target_link_libraries(behavior_1 ${catkin_LIBRARIES} )
+
+add_executable(behavior_2 src/behavior_2.cpp)
+target_link_libraries(behavior_2 ${catkin_LIBRARIES} )
+
+add_executable(behavior_3 src/behavior_3.cpp)
+target_link_libraries(behavior_3 ${catkin_LIBRARIES} )
+
+## example task 
+#add_executable(object_handover_delivery_task src/object_handover_delivery_task.cpp)
+#target_link_libraries(object_handover_delivery_task ${catkin_LIBRARIES} )
