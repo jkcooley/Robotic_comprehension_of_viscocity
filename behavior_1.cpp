@@ -83,7 +83,7 @@ void get_data()
 void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_pos, int joint_5_pos, int joint_6_pos, int finger_1_pos, int finger_2_pos)
 {
 
-	while(
+//	while(
 }
 
 
@@ -126,7 +126,18 @@ int main(int argc, char **argv)
 	//get the states from the arm
 	get_data();
 
+	sensor_msgs::JointState desired_state = 
 
+	
+	string header[] =  {"seq: 600", "stamp: 1477074469.341749274", "frame_id:"};
+	string name[] = {mico_joint_1, mico_joint_2, mico_joint_3, mico_joint_4, mico_joint_5, mico_joint_6, mico_joint_finger_1, mico_joint_finger_2};
+	float64 position[] = {0.662198, -0.765186, -0.281049, -0.650929, 2.023, 2.35381, -0.00084, -0.00084};
+	float64 velocity[] = {0, 0, 0, 0, 0, 0, 0, 0};
+	float64 effort[] = {6.08548e+14, 1.22894e-26, -2.03711e-18, 4.59149e-41, -2.03711e-18, 4.59149e-41, 0, 0};
+
+
+
+ 
 	//this is the part where it goes to the position we want it in
 	goToLocation(joint_state);		
 
