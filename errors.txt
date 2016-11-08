@@ -1,91 +1,52 @@
 [ 95%] Building CXX object robotic_comprehension_of_viscocity/CMakeFiles/behavior_1.dir/src/behavior_1.cpp.o
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:23:1: error: ‘geometry_msgs’ does not name a type
- geometry_msgs::PoseStamped pose_stamped;
- ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:28:1: error: ‘jaco_ros’ does not name a type
- jaco_ros::jaco_arm_driver/out/finger_position
- ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:47:34: error: ‘PoseStampedConstPtr’ in namespace ‘sensor_msgs’ does not name a type
- void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr &message)
-                                  ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:47:68: error: ISO C++ forbids declaration of ‘message’ with no type [-fpermissive]
- void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr &message)
-                                                                    ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp: In function ‘void pose_stamped_callback(const int&)’:
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:49:2: error: ‘pose_stamped’ was not declared in this scope
-  pose_stamped = *message;
-  ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:49:18: error: invalid type argument of unary ‘*’ (have ‘int’)
-  pose_stamped = *message;
-                  ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp: At global scope:
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:54:33: error: ‘FingerPositionConstPtr’ in namespace ‘sensor_msgs’ does not name a type
- void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr &message)
-                                 ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:54:70: error: ISO C++ forbids declaration of ‘message’ with no type [-fpermissive]
- void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr &message)
-                                                                      ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp: In function ‘void finger_pose_callback(const int&)’:
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:56:2: error: ‘finger_pose’ was not declared in this scope
-  finger_pose = *message;
-  ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:56:17: error: invalid type argument of unary ‘*’ (have ‘int’)
-  finger_pose = *message;
-                 ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:57:9: error: ‘heard_finger_pose’ was not declared in this scope
-         heard_finger_pose = true;
-         ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp: In function ‘void get_data()’:
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:65:2: error: ‘heard_finger_pose’ was not declared in this scope
-  heard_finger_pose = false;
-  ^
 /home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp: In function ‘bool goToLocation(float*)’:
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:95:32: error: ‘ArmJointAnglesAction’ is not a member of ‘jaco_msgs’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:97:32: error: ‘ArmJointAnglesAction’ is not a member of ‘jaco_msgs’
   actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
                                 ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:95:32: error: ‘ArmJointAnglesAction’ is not a member of ‘jaco_msgs’
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:95:63: error: template argument 1 is invalid
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:97:32: error: ‘ArmJointAnglesAction’ is not a member of ‘jaco_msgs’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:97:63: error: template argument 1 is invalid
   actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
                                                                ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:95:67: error: invalid type in declaration before ‘(’ token
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:97:67: error: invalid type in declaration before ‘(’ token
   actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
                                                                    ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:95:122: error: expression list treated as compound expression in initializer [-fpermissive]
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:97:122: error: expression list treated as compound expression in initializer [-fpermissive]
   actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
                                                                                                                           ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:96:2: error: ‘ArmJointAnglesGoal’ is not a member of ‘jaco_msgs’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:98:2: error: ‘ArmJointAnglesGoal’ is not a member of ‘jaco_msgs’
   jaco_msgs::ArmJointAnglesGoal goal;
   ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:96:32: error: expected ‘;’ before ‘goal’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:98:32: error: expected ‘;’ before ‘goal’
   jaco_msgs::ArmJointAnglesGoal goal;
                                 ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:97:2: error: ‘goal’ was not declared in this scope
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:99:2: error: ‘goal’ was not declared in this scope
   goal.angles.joint1 = position[0];
   ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:104:5: error: request for member ‘waitForServer’ in ‘ac’, which is of non-class type ‘int’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:106:5: error: request for member ‘waitForServer’ in ‘ac’, which is of non-class type ‘int’
   ac.waitForServer();
      ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:105:5: error: request for member ‘sendGoal’ in ‘ac’, which is of non-class type ‘int’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:107:5: error: request for member ‘sendGoal’ in ‘ac’, which is of non-class type ‘int’
   ac.sendGoal(goal);
      ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:107:5: error: request for member ‘waitForResult’ in ‘ac’, which is of non-class type ‘int’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:109:5: error: request for member ‘waitForResult’ in ‘ac’, which is of non-class type ‘int’
   ac.waitForResult();
      ^
 /home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp: In function ‘int main(int, char**)’:
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:116:2: error: ‘nodeHandle’ is not a member of ‘ros’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:118:2: error: ‘nodeHandle’ is not a member of ‘ros’
   ros::nodeHandle node_handle;
   ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:116:18: error: expected ‘;’ before ‘node_handle’
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:118:18: error: expected ‘;’ before ‘node_handle’
   ros::nodeHandle node_handle;
                   ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:119:42: error: ‘node_handle’ was not declared in this scope
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:121:42: error: ‘node_handle’ was not declared in this scope
   ros::Subscriber joint_pose_subscriber = node_handle.subscribe("/joint_states", 1, joint_state_callback);
                                           ^
-/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:124:60: error: ‘geometry_msgs’ has not been declared
+/home/josiekate/catkin_ws/src/robotic_comprehension_of_viscocity/src/behavior_1.cpp:126:60: error: ‘TwistStamped’ is not a member of ‘geometry_msgs’
   ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
                                                             ^
 make[2]: *** [robotic_comprehension_of_viscocity/CMakeFiles/behavior_1.dir/src/behavior_1.cpp.o] Error 1
 make[1]: *** [robotic_comprehension_of_viscocity/CMakeFiles/behavior_1.dir/all] Error 2
 make: *** [all] Error 2
 Invoking "make -j1 -l1" failed
+josiekate@josiekate-VirtualBox:~/catkin_ws$ 
 

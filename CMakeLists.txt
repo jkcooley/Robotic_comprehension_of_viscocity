@@ -4,27 +4,6 @@ project(robotic_comprehension_of_viscosity)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-##find_package(catkin REQUIRED COMPONENTS
-##  jaco_msgs
-##  moveit_msgs
-##  roscpp
-##  rospy
-##  std_msgs
-##  actionlib_msgs
-##  actionlib
-##  moveit_ros_planning_interface
-##  moveit_utils
-##  moveit_msgs
-##  nav_msgs
-##  move_base_msgs
-##  segbot_arm_perception
-##  segbot_arm_manipulation
-##  pcl_ros
-##  pcl_conversions
-##  bwi_msgs
-##)
-
-
 find_package(catkin REQUIRED COMPONENTS
   jaco_msgs
   moveit_msgs
@@ -34,13 +13,17 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   moveit_ros_planning_interface
+#  moveit_utils
   moveit_msgs
   nav_msgs
   move_base_msgs
+#  segbot_arm_perception
+#  segbot_arm_manipulation
   pcl_ros
   pcl_conversions
   bwi_msgs
 )
+
 
 
 ###################################
