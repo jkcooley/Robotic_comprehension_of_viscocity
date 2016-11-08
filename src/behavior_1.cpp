@@ -10,7 +10,7 @@
 //#include <jaco_msgs/FingerPosition.h>
 //#include <jaco_ros/jaco_arm_driver.h>
 #include <jaco_msgs/HomeArm.h>
-#include <segbot_arm_manipulation/arm_utils.h>
+//#include <segbot_arm_manipulation/arm_utils.h>
 
 #define JOINTS 8
 //up-down motion

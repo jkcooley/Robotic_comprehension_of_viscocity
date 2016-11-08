@@ -10,7 +10,7 @@
 //#include <jaco_msgs/FingerPosition.h>
 //#include <jaco_ros/jaco_arm_driver.h>
 #include <jaco_msgs/HomeArm.h>
-#include <segbot_arm_manipulation/arm_utils.h>
+//#include <segbot_arm_manipulation/arm_utils.h>
 
 #define JOINTS 8
 //up-down motion
@@ -32,7 +32,7 @@ bool heard_finger_pose;
 ros::Publisher velocity_pub;
 
 //callback function for joint state
-void joint_state_callback(const sensor_msgs::JointStateConstPtr& message)
+void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 {
 	//if data from all the joints has been recieved, set joint_state and heard_state accordingly
 	if (message->position.size() == JOINTS)
@@ -44,14 +44,14 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr& message)
 
 //PoseStampedConstPtr& message or just PoseStamped &message
 //callback function for stamped position
-void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr& message)
+void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr &message)
 {
 	pose_stamped = *message;
         heard_pose_stamped = true;
 }
 
 //callback function for finger position
-void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr& message)
+void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr &message)
 {
 	finger_pose = *message;
         heard_finger_pose = true;
