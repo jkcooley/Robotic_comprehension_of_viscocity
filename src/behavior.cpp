@@ -5,10 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
+
+
 #include <sensor_msgs/JointState.h>
 #include <actionlib/client/simple_action_client.h>
-//#include <jaco_msgs/FingerPosition.h>
-//#include <jaco_ros/jaco_arm_driver.h>
+#include <jaco_msgs/FingerPosition.h>
+#include <jaco_msgs/ArmJointAnglesAction.h>
 #include <jaco_msgs/HomeArm.h>
 //#include <segbot_arm_manipulation/arm_utils.h>
 
@@ -24,8 +29,8 @@ geometry_msgs::PoseStamped pose_stamped;
 bool heard_pose_stamped;
 
 //http://docs.ros.org/hydro/api/jaco_msgs/html/msg/FingerPosition.html - note that this robot does not have a finger 3
-//jaco_msgs::FingerPosition finger_pose;
-jaco_ros::jaco_arm_driver/out/finger_position
+jaco_msgs::FingerPosition finger_pose;
+//jaco_ros::jaco_arm_driver/out/finger_position finger_pose;
 bool heard_finger_pose;
 
 //global publisher for cartesian velocity
@@ -44,14 +49,15 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 
 //PoseStampedConstPtr& message or just PoseStamped &message
 //callback function for stamped position
-void pose_stamped_callback(const sensor_msgs::PoseStampedConstPtr &message)
+//changed from sensor_msgs because PoseStamped is a geometry_msgs message
+void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
 {
 	pose_stamped = *message;
         heard_pose_stamped = true;
 }
 
 //callback function for finger position
-void finger_pose_callback(const sensor_msgs::FingerPositionConstPtr &message)
+void finger_pose_callback(const jaco_msgs::FingerPositionConstPtr &message)
 {
 	finger_pose = *message;
         heard_finger_pose = true;
@@ -113,7 +119,7 @@ int main(int argc, char **argv)
 	//name the node
 	ros::init(argc, argv, "behavior_1");
 
-	ros::nodeHandle node_handle;
+	ros::NodeHandle node_handle;
 
 	//subscribe to topics
 	ros::Subscriber joint_pose_subscriber = node_handle.subscribe("/joint_states", 1, joint_state_callback);
@@ -139,8 +145,9 @@ int main(int argc, char **argv)
 
  
 	//this is the part where it goes to the position we want it in
-	goToLocation(position);		
-
+	//goToLocation(position);		
+	//assume the arm is in the correct location
+	//this puts the arm in a weird mode that makes the velocity do weird things
 
 	//get into the correct position to accept the spoon - look at homing tutorial
 	//ask for user confirmation that the spoon has been inserted properly - look at "press enter" part of arm tutorials
