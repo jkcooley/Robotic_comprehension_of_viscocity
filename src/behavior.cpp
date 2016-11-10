@@ -93,6 +93,30 @@ void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_po
 }
 
 
+void back_and_forth(float goal_x)
+{
+	while()
+	{
+	//using ArmPose instead of ArmJointAngles as in goToLocation
+        actionlib::SimpleActionClient<jaco_msgs::ArmPoseAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
+        jaco_msgs::ArmPoseGoal goal;
+     
+	//which joint(s) do we want to move? 
+        goal.angles.joint1 = position[0];
+        goal.angles.joint2 = position[1];
+        goal.angles.joint3 = position[2];
+        goal.angles.joint4 = position[3];
+        goal.angles.joint5 = position[4];
+        goal.angles.joint6 = position[5];
+     
+        ac.waitForServer();
+        ac.sendGoal(goal);
+        ROS_INFO("Trajectory goal sent");
+        ac.waitForResult();
+
+	}
+}
+
 //from https://github.com/utexas-bwi/segbot_arm/blob/experiments/object_exploration/object_exploration/src/interact_arm.cpp 
 //completely unchanged... should probably fix that
 bool goToLocation(float position[]){
