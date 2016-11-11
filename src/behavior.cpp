@@ -1,4 +1,4 @@
-tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
+//tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -13,7 +13,8 @@ tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_
 #include <jaco_msgs/ArmJointAnglesAction.h>
 #include <jaco_msgs/ArmPoseAction.h>
 #include <jaco_msgs/HomeArm.h>
-//#include <segbot_arm_manipulation/arm_utils.h>
+#include <segbot_arm_manipulation/arm_utils.h>
+//#include <segbot_arm_manipulation/moveToPoseMoveIt.h>
 
 #define JOINTS 8
 //up-down motion
@@ -97,27 +98,22 @@ void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
 	geometry_msgs::PoseStamped current_pose = pose_stamped;
 
 	//diff defined as the difference between the position of the arm and the position determined as the starting point
-	float diff = current_pose.x - goal_x; 
-	while(diff > error)
+//	float diff = current_pose - goal_x; 
+	while(1 > error)
 	{
 	//using ArmPose instead of ArmJointAngles as in goToLocation
         actionlib::SimpleActionClient<jaco_msgs::ArmPoseAction> ac("/mico_arm_driver/arm_pose/arm_pose", true);
         jaco_msgs::ArmPoseGoal goal;
      
 	//which joint(s) do we want to move? 
-        //goal.pose.joint1 = position[0];
-        //goal.pose.joint2 = position[1];
-        //goal.pose.joint3 = position[2];
-        //goal.pose.joint4 = position[3];
-        //goal.pose.joint5 = position[4];
-        goal.pose = goal_x;
+        //goal.pose.position.x = goal_x.pose.position.x;
      
         ac.waitForServer();
         ac.sendGoal(goal);
         ROS_INFO("Trajectory goal sent");
         ac.waitForResult();
 
-	get_data();
+	//get_data();
 
 	}
 }
@@ -161,35 +157,21 @@ int main(int argc, char **argv)
 	//get the states from the arm
 	get_data();
 
-//	sensor_msgs::JointState desired_state = 
-
+	geometry_msgs::PoseStamped goal_x;
+	goal_x.header.frame_id = "mico_link_base";
+	goal_x.pose.position.x = 0.283979;
+	goal_x.pose.position.x = 0.476259;
+	goal_x.pose.position.x = 0.357072;
+	goal_x.pose.orientation.x = -0.0458191;
+	goal_x.pose.orientation.y = 0.662054;
+	goal_x.pose.orientation.z = 0.726168;
+	goal_x.pose.orientation.w = 0.179623;
 	
-//	string header[] =  {"seq: 600", "stamp: 1477074469.341749274", "frame_id:"};
-//	string name[] = {mico_joint_1, mico_joint_2, mico_joint_3, mico_joint_4, mico_joint_5, mico_joint_6, mico_joint_finger_1, mico_joint_finger_2};
-	float position[] = {0.662198, -0.765186, -0.281049, -0.650929, 2.023, 2.35381, -0.00084, -0.00084};
-//	float64 velocity[] = {0, 0, 0, 0, 0, 0, 0, 0};
-//	float64 effort[] = {6.08548e+14, 1.22894e-26, -2.03711e-18, 4.59149e-41, -2.03711e-18, 4.59149e-41, 0, 0};
+	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
 
-
-
- 
-	//this is the part where it goes to the position we want it in
-	//goToLocation(position);		
-	//assume the arm is in the correct location
-	//this puts the arm in a weird mode that makes the velocity do weird things
-
-	//get into the correct position to accept the spoon - look at homing tutorial
-	//ask for user confirmation that the spoon has been inserted properly - look at "press enter" part of arm tutorials
-	//get into the correct position to go up and down - should be similar to spoon one
-	//go up and down - how many repetitions?
-
+	//back_and_forth(goal_x, .1);
 }
 
-//out/cartesian_velocity //subscriber, may be used to set velocity
-//out/joint_velocity //subscriber, may be used to set velocity
-//out/finger_position //raw angular position in degrees
-//out/joint_angles //raw angular position in degrees
-//out/joint_state //topic, publishes transformed joint angles in radians via sensor_msgs
 
 //what the joint state prints out
 /*
