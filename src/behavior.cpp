@@ -1,4 +1,4 @@
-//tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
+tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -91,9 +91,14 @@ void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_po
 }
 
 
+//manipulate x values
 void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
 {
-	while(error > 1)
+	geometry_msgs::PoseStamped current_pose = pose_stamped;
+
+	//diff defined as the difference between the position of the arm and the position determined as the starting point
+	float diff = current_pose.x - goal_x; 
+	while(diff > error)
 	{
 	//using ArmPose instead of ArmJointAngles as in goToLocation
         actionlib::SimpleActionClient<jaco_msgs::ArmPoseAction> ac("/mico_arm_driver/arm_pose/arm_pose", true);
@@ -111,6 +116,9 @@ void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
         ac.sendGoal(goal);
         ROS_INFO("Trajectory goal sent");
         ac.waitForResult();
+
+	get_data();
+
 	}
 }
 
