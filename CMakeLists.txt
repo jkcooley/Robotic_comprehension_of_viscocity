@@ -13,12 +13,12 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   moveit_ros_planning_interface
-#  moveit_utils
+  moveit_utils
   moveit_msgs
   nav_msgs
   move_base_msgs
-#  segbot_arm_perception
-#  segbot_arm_manipulation
+  segbot_arm_perception
+  segbot_arm_manipulation
   pcl_ros
   pcl_conversions
   bwi_msgs
@@ -57,14 +57,8 @@ include_directories(
 
 ## executables
 
-add_executable(behavior_1 src/behavior_1.cpp)
-target_link_libraries(behavior_1 ${catkin_LIBRARIES} )
-
-add_executable(behavior_2 src/behavior_2.cpp)
-target_link_libraries(behavior_2 ${catkin_LIBRARIES} )
-
-add_executable(behavior_3 src/behavior_3.cpp)
-target_link_libraries(behavior_3 ${catkin_LIBRARIES} )
+add_executable(behavior src/behavior.cpp)
+target_link_libraries(behavior ${catkin_LIBRARIES} )
 
 ## example task 
 #add_executable(object_handover_delivery_task src/object_handover_delivery_task.cpp)

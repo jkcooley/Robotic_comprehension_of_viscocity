@@ -5,15 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
-
-
 #include <sensor_msgs/JointState.h>
 #include <actionlib/client/simple_action_client.h>
 #include <jaco_msgs/FingerPosition.h>
 #include <jaco_msgs/ArmJointAnglesAction.h>
+#include <jaco_msgs/ArmPoseAction.h>
 #include <jaco_msgs/HomeArm.h>
 //#include <segbot_arm_manipulation/arm_utils.h>
 
@@ -93,27 +91,26 @@ void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_po
 }
 
 
-void back_and_forth(float goal_x)
+void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
 {
-	while()
+	while(error > 1)
 	{
 	//using ArmPose instead of ArmJointAngles as in goToLocation
-        actionlib::SimpleActionClient<jaco_msgs::ArmPoseAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
+        actionlib::SimpleActionClient<jaco_msgs::ArmPoseAction> ac("/mico_arm_driver/arm_pose/arm_pose", true);
         jaco_msgs::ArmPoseGoal goal;
      
 	//which joint(s) do we want to move? 
-        goal.angles.joint1 = position[0];
-        goal.angles.joint2 = position[1];
-        goal.angles.joint3 = position[2];
-        goal.angles.joint4 = position[3];
-        goal.angles.joint5 = position[4];
-        goal.angles.joint6 = position[5];
+        //goal.pose.joint1 = position[0];
+        //goal.pose.joint2 = position[1];
+        //goal.pose.joint3 = position[2];
+        //goal.pose.joint4 = position[3];
+        //goal.pose.joint5 = position[4];
+        goal.pose = goal_x;
      
         ac.waitForServer();
         ac.sendGoal(goal);
         ROS_INFO("Trajectory goal sent");
         ac.waitForResult();
-
 	}
 }
 
