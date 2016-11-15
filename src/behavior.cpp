@@ -138,6 +138,66 @@ bool goToLocation(float position[]){
 	ac.waitForResult();
 }
 
+void my_behavior(ros::NodeHandle node_handle){
+	//publish the velocities
+	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
+
+	//construct message
+	geometry_msgs::TwistStamped velocityMsg;
+	velocityMsg.twist.linear.x = 0.0;
+	velocityMsg.twist.linear.y = 0.0;
+	velocityMsg.twist.linear.z = 0.2; 
+	velocityMsg.twist.angular.x = 0.0;
+	velocityMsg.twist.angular.y = 0.0;
+	velocityMsg.twist.angular.z = 0.0;
+
+	double duration = 1.0; //2 seconds
+	double elapsed_time = 0.0;
+	
+	double pub_rate = 40.0; //we publish at 40 hz
+	ros::Rate r(pub_rate);
+	
+	while (ros::ok()){
+		//collect messages
+		ros::spinOnce();
+		
+		//publish velocity message
+		pub_velocity.publish(velocityMsg);
+		
+		r.sleep();
+		
+		elapsed_time += (1.0/pub_rate);
+		
+		if (elapsed_time > duration)
+			break;
+	}
+	
+	
+	velocityMsg.twist.linear.z = -0.2;
+	
+	elapsed_time = 0.0;
+	while (ros::ok()){
+		//collect messages
+		ros::spinOnce();
+		
+		//publish velocity message
+		pub_velocity.publish(velocityMsg);
+		
+		r.sleep();
+		
+		elapsed_time += (1.0/pub_rate);
+		
+		if (elapsed_time > duration)
+			break;
+	}
+	
+	
+	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
+	velocityMsg.twist.linear.z = 0.0; 
+	pub_velocity.publish(velocityMsg);
+}
+
+
 //call functions to get data
 int main(int argc, char **argv)
 {
@@ -153,7 +213,9 @@ int main(int argc, char **argv)
 
 	//publish the velocities
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
-
+	
+	//try test behavior
+	my_behavior(node_handle);
 	//get the states from the arm
 	get_data();
 
@@ -170,24 +232,26 @@ int main(int argc, char **argv)
 //	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
 
 	geometry_msgs::TwistStamped message;
-
-	//the back and forth motion
-
+	
 	int direction = 1;
 
 	double startTime = ros::Time::now().toSec();
 
-	double endTime = startTime + 30;
+	double endTime = startTime + 20;
+	
+	
+	double pub_rate = 40.0; //we publish at 40 hz
+	ros::Rate rate(pub_rate);
 
 	while(endTime > ros::Time::now().toSec())
 	{
 		//move one direction (should be forward or backwards)
-		message.twist.linear.x = .5;
+		message.twist.linear.x = 0.07 * direction;
 
 		velocity_publisher.publish(message);
 	
 		//from http://wiki.ros.org/roscpp/Overview/Time
-		ros::Duration(0.5).sleep(); // sleep for half a second
+		ros::Duration(.25).sleep(); // sleep for one second
 
 		//move the opposite direction
 		direction *= -1;
@@ -196,8 +260,11 @@ int main(int argc, char **argv)
 	message.twist.linear.x = 0;
 
 	velocity_publisher.publish(message);
+
+	
 	
 
+	//whisk
 	//get back into position 
 //	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
 
