@@ -121,15 +121,15 @@ int main(int argc, char **argv)
 
 	geometry_msgs::PoseStamped goal_x;
 	goal_x.header.frame_id = "mico_link_base";
-	goal_x.pose.position.x = 0.283979;
-	goal_x.pose.position.x = 0.476259;
-	goal_x.pose.position.x = 0.357072;
-	goal_x.pose.orientation.x = -0.0458191;
-	goal_x.pose.orientation.y = 0.662054;
-	goal_x.pose.orientation.z = 0.726168;
-	goal_x.pose.orientation.w = 0.179623;
+	goal_x.pose.position.x = 0.389813;
+	goal_x.pose.position.y = -0.0222033;
+	goal_x.pose.position.z = 0.22019;
+	goal_x.pose.orientation.x = 0.734704;
+	goal_x.pose.orientation.y = 0.734704;
+	goal_x.pose.orientation.z = 0.0426369;
+	goal_x.pose.orientation.w = 0.0219083;
 	
-	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
+//	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
 
 	geometry_msgs::TwistStamped message;
 
@@ -160,5 +160,11 @@ int main(int argc, char **argv)
 	velocity_publisher.publish(message);
 
 	//get back into position 
+<<<<<<< HEAD
 	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
+=======
+//	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
+
+	
+>>>>>>> 37c6f83915c730c2f4d3bb738b791d43031a1aa1
 }
