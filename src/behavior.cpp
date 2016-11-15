@@ -93,7 +93,7 @@ void get_spoon(int joint_1_pos, int joint_2_pos, int joint_3_pos, int joint_4_po
 
 
 //manipulate x values
-void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
+/*void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
 {
 	geometry_msgs::PoseStamped current_pose = pose_stamped;
 
@@ -106,7 +106,7 @@ void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
         jaco_msgs::ArmPoseGoal goal;
      
 	//which joint(s) do we want to move? 
-        //goal.pose.position.x = goal_x.pose.position.x;
+        goal.pose.position.x = goal_x.pose.position.x;
      
         ac.waitForServer();
         ac.sendGoal(goal);
@@ -116,7 +116,7 @@ void back_and_forth(geometry_msgs::PoseStamped goal_x, float error)
 	//get_data();
 
 	}
-}
+}*/
 
 //from https://github.com/utexas-bwi/segbot_arm/blob/experiments/object_exploration/object_exploration/src/interact_arm.cpp 
 //completely unchanged... should probably fix that
@@ -169,7 +169,39 @@ int main(int argc, char **argv)
 	
 	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
 
-	//back_and_forth(goal_x, .1);
+	geometry_msgs::TwistStamped message;
+
+	//the back and forth motion
+
+	int direction = 1;
+
+	double startTime = ros::Time::now().toSec();
+
+	double endTime = startTime + 30;
+
+	while(endTime > ros::Time::now().toSec())
+	{
+		//move one direction (should be forward or backwards)
+		message.twist.linear.x = .5;
+
+		velocity_publisher.publish(message);
+	
+		//from http://wiki.ros.org/roscpp/Overview/Time
+		ros::Duration(0.5).sleep(); // sleep for half a second
+
+		//move the opposite direction
+		direction *= -1;
+	}
+
+	message.twist.linear.x = 0;
+
+	velocity_publisher.publish(message);
+	
+
+	//get back into position 
+	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, goal_x);
+
+	
 }
 
 
