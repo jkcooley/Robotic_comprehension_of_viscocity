@@ -1,6 +1,6 @@
 //tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
-//TODO: delete unnecessary methods / comments
+//TODO: delete unnecessary methods / comments (what of this do we use?)
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <complex.h>
 
+//TODO: figure out if we use this
 #define JOINTS 8
 
 //describes the state of a set of torque-controlled joints - name, position, velocity, effort (http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/JointState.html)
@@ -65,6 +66,7 @@ void finger_pose_callback(const jaco_msgs::FingerPositionConstPtr &message)
         heard_finger_pose = true;
 }
 
+//TODO: find out if we even need this
 //get the states from the arm
 void get_data()
 {
@@ -89,7 +91,7 @@ void get_data()
 
 //from https://github.com/utexas-bwi/segbot_arm/blob/experiments/object_exploration/object_exploration/src/interact_arm.cpp 
 //completely unchanged... should probably fix that (TODO)
-bool goToLocation(float position[]){
+/*bool goToLocation(float position[]){
 	
 	actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
 	jaco_msgs::ArmJointAnglesGoal goal;
@@ -103,7 +105,7 @@ bool goToLocation(float position[]){
 	ac.sendGoal(goal);
 	ROS_INFO("Trajectory goal sent");
 	ac.waitForResult();
-}
+}*/
 
 //moves the arm up and down (along the z-axis - keep in mind that the robot is tilted to stir)
 void up_down(ros::NodeHandle node_handle, double velocity, int numRepetitions)
@@ -304,7 +306,7 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepeti
 	pub_velocity.publish(velocityMsg);
 }
 
-//publish all 0s
+//publish all 0s (for space between the actions)
 void pause(ros::NodeHandle node_handle, double duration)
 {
 	//publish the velocities
@@ -319,17 +321,13 @@ void pause(ros::NodeHandle node_handle, double duration)
         velocityMsg.twist.angular.y = 0.0;
         velocityMsg.twist.angular.z = 0.0;
 
+        double elapsed_time = 0.0;
 
-	//TODO: fix the tabs here
-//        for(int rep = 0; rep < numRepetitions; rep++)
-  //      {	
-               double elapsed_time = 0.0;
-
-               double pub_rate = 40.0; //we publish at 40 hz
-               ros::Rate r(pub_rate);
+        double pub_rate = 40.0; //we publish at 40 hz
+        ros::Rate r(pub_rate);
  
-               while (ros::ok())
-               {
+        while (ros::ok())
+        {
 		//collect messages
                 ros::spinOnce();
 
@@ -342,10 +340,8 @@ void pause(ros::NodeHandle node_handle, double duration)
 
                 if (elapsed_time > duration)
                 	break;
-                }
-//	}
+	}
 }
-
 
 //call functions to get data
 int main(int argc, char **argv)
@@ -363,9 +359,6 @@ int main(int argc, char **argv)
 	//publish the velocities
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 	
-	//try test behavior
-	
-
 	up_down(node_handle, 0.2, 1);
 
 //	circle_behavior(node_handle, .2, 1, 5);
