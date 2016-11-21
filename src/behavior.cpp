@@ -1,5 +1,7 @@
 //tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 
+//TODO: delete unnecessary methods / comments
+
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <stdio.h>
@@ -14,9 +16,12 @@
 #include <jaco_msgs/ArmPoseAction.h>
 #include <jaco_msgs/HomeArm.h>
 #include <segbot_arm_manipulation/arm_utils.h>
+#include <cmath>
+#include <math.h>
+#include <stdio.h>
+#include <complex.h>
 
 #define JOINTS 8
-//up-down motion
 
 //describes the state of a set of torque-controlled joints - name, position, velocity, effort (http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/JointState.html)
 sensor_msgs::JointState joint_state;
@@ -83,7 +88,7 @@ void get_data()
 }
 
 //from https://github.com/utexas-bwi/segbot_arm/blob/experiments/object_exploration/object_exploration/src/interact_arm.cpp 
-//completely unchanged... should probably fix that
+//completely unchanged... should probably fix that (TODO)
 bool goToLocation(float position[]){
 	
 	actionlib::SimpleActionClient<jaco_msgs::ArmJointAnglesAction> ac("/mico_arm_driver/joint_angles/arm_joint_angles", true);
@@ -110,54 +115,60 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int numRepetit
 	geometry_msgs::TwistStamped velocityMsg;
 	velocityMsg.twist.linear.x = 0.0;
 	velocityMsg.twist.linear.y = 0.0;
-	velocityMsg.twist.linear.z = velocity; 
 	velocityMsg.twist.angular.x = 0.0;
 	velocityMsg.twist.angular.y = 0.0;
 	velocityMsg.twist.angular.z = 0.0;
 
-	//2 secs or 1 sec?
-	double duration = 2.0; //2 seconds
-	double elapsed_time = 0.0;
-	
-	double pub_rate = 40.0; //we publish at 40 hz
-	ros::Rate r(pub_rate);
-	
-	while (ros::ok())
-	{
-		//collect messages
-		ros::spinOnce();
-		
-		//publish velocity message
-		pub_velocity.publish(velocityMsg);
-		
-		r.sleep();
-		
-		elapsed_time += (1.0/pub_rate);
-		
-		if (elapsed_time > duration)
-			break;
-	}
-		
-	velocityMsg.twist.linear.z = velocity * -1;
-	
-	elapsed_time = 0.0;
+	//TODO: can we put the duration and stuff here?
 
-	while (ros::ok())
+	for(int rep = 0; rep < numRepetitions; rep++)
 	{
-		//collect messages
-		ros::spinOnce();
-		
-		//publish velocity message
-		pub_velocity.publish(velocityMsg);
-		
-		r.sleep();
-		
-		elapsed_time += (1.0/pub_rate);
-		
-		if (elapsed_time > duration)
-			break;
-	}
+		velocityMsg.twist.linear.z = velocity; 
 	
+		//TODO: 2 secs or 1 sec?
+		double duration = 2.0; //2 seconds
+		double elapsed_time = 0.0;
+	
+		double pub_rate = 40.0; //we publish at 40 hz
+		ros::Rate r(pub_rate);
+	
+		while (ros::ok())
+		{
+			//collect messages
+			ros::spinOnce();
+		
+			//publish velocity message
+			pub_velocity.publish(velocityMsg);
+		
+			r.sleep();
+		
+			elapsed_time += (1.0/pub_rate);
+		
+			if (elapsed_time > duration)
+				break;
+		}
+		
+		velocityMsg.twist.linear.z = velocity * -1;
+	
+		elapsed_time = 0.0;
+
+		while (ros::ok())
+		{
+			//collect messages
+			ros::spinOnce();
+		
+			//publish velocity message
+			pub_velocity.publish(velocityMsg);
+		
+			r.sleep();
+		
+			elapsed_time += (1.0/pub_rate);
+		
+			if (elapsed_time > duration)
+				break;
+		}
+	}
+
 	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
 	velocityMsg.twist.linear.z = 0.0; 
 	pub_velocity.publish(velocityMsg);
@@ -180,16 +191,17 @@ void up_down_behavior(ros::NodeHandle node_handle, double velocity, int numRepet
 	
 	
 	for (int i = 0; i < numRepetitions; i++){
-			velocityMsg.twist.linear.x = velocity;
 
+		velocityMsg.twist.linear.x = velocity;
 
-		//2 secs or 1 sec?
+		//TODO: 2 secs or 1 sec?
 		double duration = 2.0; //2 seconds
 		double elapsed_time = 0.0;
 		
 		double pub_rate = 40.0; //we publish at 40 hz
 		ros::Rate r(pub_rate);
 		
+		//TODO: should this be an if instead? 	
 		while (ros::ok())
 		{
 			//collect messages
@@ -234,7 +246,7 @@ void up_down_behavior(ros::NodeHandle node_handle, double velocity, int numRepet
 
 
 //moves the arm in a circle (using x and y axes)
-void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepetitions)
+void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepetitions, double radius)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -243,54 +255,51 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepeti
 	geometry_msgs::TwistStamped velocityMsg;
 	velocityMsg.twist.linear.x = 0.0;
 	velocityMsg.twist.linear.y = 0.0;
-	velocityMsg.twist.linear.z = 0.2; 
 	velocityMsg.twist.angular.x = 0.0;
 	velocityMsg.twist.angular.y = 0.0;
 	velocityMsg.twist.angular.z = 0.0;
 
-	//2 secs or 1 sec?
-	double duration = 1.0; //2 seconds
-	double elapsed_time = 0.0;
-	
-	double pub_rate = 40.0; //we publish at 40 hz
-	ros::Rate r(pub_rate);
-	
-	while (ros::ok())
+	for(int rep = 0; rep < numRepetitions; rep++)
 	{
-		//collect messages
-		ros::spinOnce();
-		
-		//publish velocity message
-		pub_velocity.publish(velocityMsg);
-		
-		r.sleep();
-		
-		elapsed_time += (1.0/pub_rate);
-		
-		if (elapsed_time > duration)
-			break;
-	}
-		
-	velocityMsg.twist.linear.z = -1 * velocity;
-	
-	elapsed_time = 0.0;
+		double angle = 0;
 
-	while (ros::ok())
-	{
-		//collect messages
-		ros::spinOnce();
-		
-		//publish velocity message
-		pub_velocity.publish(velocityMsg);
-		
-		r.sleep();
-		
-		elapsed_time += (1.0/pub_rate);
-		
-		if (elapsed_time > duration)
-			break;
-	}
+		while(angle <= 360)
+		{
+			//want to move in an x and y direction at the same time...
+			//use sin / cos? 
+			//equation of a circle: x = rcos(t), y = rsin(t)
+			//TODO: figure this out
+//			velocityMsg.twist.linear.x = velocity * radius * (double)csin(angle);
+//			velocityMsg.twist.linear.y = velocity * radius * sin(angle); 				
+			//TODO: 2 secs or 1 sec?
+			double duration = 1.0; //2 seconds
+			double elapsed_time = 0.0;
 	
+			double pub_rate = 40.0; //we publish at 40 hz
+			ros::Rate r(pub_rate);
+	
+			while (ros::ok())
+			{
+				//collect messages
+				ros::spinOnce();
+	
+				//publish velocity message
+				pub_velocity.publish(velocityMsg);
+		
+				r.sleep();
+		
+				elapsed_time += (1.0/pub_rate);
+		
+				if (elapsed_time > duration)
+					break;
+			}
+		
+			velocityMsg.twist.linear.z = -1 * velocity;
+		
+			angle += 10;
+		}
+	}
+
 	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
 	velocityMsg.twist.linear.z = 0.0; 
 	pub_velocity.publish(velocityMsg);
@@ -315,8 +324,13 @@ int main(int argc, char **argv)
 	
 	//try test behavior
 	up_down_behavior(node_handle, 0.2, 1);
+
+	circle_behavior(node_handle, .2, 1, 5);
+	
+	back_and_forth(node_handle, .2, 1);
+
 	//get the states from the arm
-	get_data();
+/*	get_data();
 
 	geometry_msgs::PoseStamped goal_x;
 	goal_x.header.frame_id = "mico_link_base";
@@ -375,4 +389,5 @@ int main(int argc, char **argv)
 
 	
 //>>>>>>> 37c6f83915c730c2f4d3bb738b791d43031a1aa1
+*/
 }
