@@ -105,8 +105,8 @@ bool goToLocation(float position[]){
 	ac.waitForResult();
 }
 
-//moves the arm forward and backwards (along the z-axis)
-void back_and_forth(ros::NodeHandle node_handle, double velocity, int numRepetitions)
+//moves the arm up and down (along the z-axis - keep in mind that the robot is tilted to stir)
+void up_down(ros::NodeHandle node_handle, double velocity, int numRepetitions)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -175,8 +175,8 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int numRepetit
 }
 
 
-//moves the arm up and down (along the x-axis)
-void up_down_behavior(ros::NodeHandle node_handle, double velocity, int numRepetitions)
+//moves the arm back and forth (along the x-axis - keep in mind that the robot is tilted to stir)
+void back_and_forth(ros::NodeHandle node_handle, double velocity, int numRepetitions)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -190,8 +190,8 @@ void up_down_behavior(ros::NodeHandle node_handle, double velocity, int numRepet
 	velocityMsg.twist.angular.z = 0.0;
 	
 	
-	for (int i = 0; i < numRepetitions; i++){
-
+	for (int i = 0; i < numRepetitions; i++)
+	{
 		velocityMsg.twist.linear.x = velocity;
 
 		//TODO: 2 secs or 1 sec?
@@ -237,13 +237,12 @@ void up_down_behavior(ros::NodeHandle node_handle, double velocity, int numRepet
 			if (elapsed_time > duration)
 				break;
 		}
-		
+
 		//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
 		velocityMsg.twist.linear.x = 0.0; 
 		pub_velocity.publish(velocityMsg);
 	}
 }
-
 
 //moves the arm in a circle (using x and y axes)
 void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepetitions, double radius)
@@ -305,6 +304,48 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepeti
 	pub_velocity.publish(velocityMsg);
 }
 
+//publish all 0s
+void pause(ros::NodeHandle node_handle, double duration)
+{
+	//publish the velocities
+        ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
+
+        //construct message
+        geometry_msgs::TwistStamped velocityMsg;
+        velocityMsg.twist.linear.x = 0.0;
+        velocityMsg.twist.linear.y = 0.0;
+        velocityMsg.twist.linear.z = 0.0;
+        velocityMsg.twist.angular.x = 0.0;
+        velocityMsg.twist.angular.y = 0.0;
+        velocityMsg.twist.angular.z = 0.0;
+
+
+	//TODO: fix the tabs here
+//        for(int rep = 0; rep < numRepetitions; rep++)
+  //      {	
+               double elapsed_time = 0.0;
+
+               double pub_rate = 40.0; //we publish at 40 hz
+               ros::Rate r(pub_rate);
+ 
+               while (ros::ok())
+               {
+		//collect messages
+                ros::spinOnce();
+
+                //publish velocity message
+                pub_velocity.publish(velocityMsg);
+
+                r.sleep();
+
+                elapsed_time += (1.0/pub_rate);
+
+                if (elapsed_time > duration)
+                	break;
+                }
+//	}
+}
+
 
 //call functions to get data
 int main(int argc, char **argv)
@@ -323,10 +364,14 @@ int main(int argc, char **argv)
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 	
 	//try test behavior
-	up_down_behavior(node_handle, 0.2, 1);
-
-	circle_behavior(node_handle, .2, 1, 5);
 	
+
+	up_down(node_handle, 0.2, 1);
+
+//	circle_behavior(node_handle, .2, 1, 5);
+	
+	pause(node_handle, 5);
+
 	back_and_forth(node_handle, .2, 1);
 
 	//get the states from the arm
