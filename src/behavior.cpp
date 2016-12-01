@@ -33,12 +33,14 @@ geometry_msgs::PoseStamped pose_stamped;
 bool heard_pose_stamped;
 
 //http://docs.ros.org/hydro/api/jaco_msgs/html/msg/FingerPosition.html - note that this robot does not have a finger 3
-jaco_msgs::FingerPosition finger_pose;
+sensor_msgs::JointState joint_efforts;
 //jaco_ros::jaco_arm_driver/out/finger_position finger_pose;
-bool heard_finger_pose;
+bool heard_efforts;
+std::vector<float> efforts_data;
 
 //flag for recording
 bool record_haptics;
+std::vector<float> pose_stamped_data; 
 
 //global publisher for cartesian velocity
 ros::Publisher velocity_pub;
@@ -62,14 +64,24 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
 {
 	pose_stamped = *message;
-        heard_pose_stamped = true;
+    heard_pose_stamped = true;
+    
+    if (record_haptics){
+		//TODO: add the current message to a vector of poses
+		
+	}
 }
 
-//callback function for finger position
-void finger_pose_callback(const jaco_msgs::FingerPositionConstPtr &message)
+//callback function for joint efforts
+void joint_efforts_callback(const sensor_msgs::JointStateConstPtr &message)
 {
-	finger_pose = *message;
-        heard_finger_pose = true;
+	joint_efforts = *message;
+    heard_efforts = true;
+    
+    if(record_haptics)
+	{
+//		efforts_data.push_back(joint_efforts);
+	}
 }
 
 //moves the arm up and down (along the z-axis - keep in mind that the robot is tilted to stir)
@@ -217,6 +229,9 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepeti
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 
+	for(int rep = 0; rep < numRepetitions; rep++)
+	{
+	/*
 	//construct message
 	geometry_msgs::TwistStamped velocityMsg;
 	velocityMsg.twist.linear.x = 0.0;
@@ -224,9 +239,44 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepeti
 	velocityMsg.twist.angular.x = 0.0;
 	velocityMsg.twist.angular.y = 0.0;
 	velocityMsg.twist.angular.z = 0.0;
+	*/
+	double timeoutSeconds = 8.0;
+	int rateHertz = 100;
+	geometry_msgs::TwistStamped velocityMsg;
+	
+	double linearAngleX = 0;
+	double linearVelX;
+	double linearAngleZ = 0;
+	double linearVelZ;
+	//should make the circle bigger or smaller
+	double magnitude = 0.2;
+	
+	ros::Rate r(rateHertz);
+	for(int i = 0; i < (int)timeoutSeconds * rateHertz; i++) {
+		
+		linearAngleX += (2*PI)/(timeoutSeconds * rateHertz);
+		linearVelX = magnitude * sin(linearAngleX);
+		linearAngleZ += (2*PI)/(timeoutSeconds * rateHertz);
+		linearVelZ = magnitude * cos(linearAngleZ);
+		
+		velocityMsg.twist.linear.x = -linearVelX;
+		velocityMsg.twist.linear.y = 0.0;
+		velocityMsg.twist.linear.z = linearVelZ;
+		
+		velocityMsg.twist.angular.x = 0.0;
+		velocityMsg.twist.angular.y = 0.0;
+		velocityMsg.twist.angular.z = 0.0;
+		
+		ROS_INFO("linearVelZ = %f", linearVelZ);
+		ROS_INFO("linearVelX = %f", linearVelX);
+		pub_velocity.publish(velocityMsg);
+		
+		ros::spinOnce();
+		
+		r.sleep();
+	}
 
-	for(int rep = 0; rep < numRepetitions; rep++)
-	{
+	/*
 		double angle = 0;
 
 		while(angle <= 360)
@@ -264,11 +314,11 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepeti
 		
 			angle += 10;
 		}
-	}
+	}*/
 
 	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
-	velocityMsg.twist.linear.z = 0.0; 
-	pub_velocity.publish(velocityMsg);
+	//velocityMsg.twist.linear.z = 0.0; 
+}
 }
 
 //publish all 0s (for space between the actions)
@@ -358,6 +408,26 @@ std::string getLiquid(std::string message)
 	}
 }
 
+//write to file
+/*void writeToFile(std::string file_path, int vectorLength, std::vector theData)
+{
+	std::ofstream file;
+	file.open(file_path.c_str());
+	
+	ros::spinOnce();
+	
+	file << "Data format: ";
+	
+	for(int index = 0; index < vectorLength; index++)
+	{
+		//TODO: pass in the vector 
+		file << theData.at(index) << ", ";
+	}
+	
+	file << "\n";
+}*/
+
+
 //call functions to get data
 int main(int argc, char **argv)
 {
@@ -369,7 +439,8 @@ int main(int argc, char **argv)
 	//subscribe to topics
 	ros::Subscriber joint_pose_subscriber = node_handle.subscribe("/joint_states", 1, joint_state_callback);
 	ros::Subscriber pose_stamped_subscriber = node_handle.subscribe("/mico_arm_driver/out/tool_position", 1, pose_stamped_callback);	
-	ros::Subscriber finger_pose_subscriber = node_handle.subscribe("/mico_arm_driver/out/finger_position", 1, finger_pose_callback);
+	ros::Subscriber joint_efforts_subscriber = node_handle.subscribe("/mico_arm_driver/out/joint_efforts", 1, joint_efforts_callback);
+	//ros::Subscriber finger_pose_subscriber = node_handle.subscribe("/mico_arm_driver/out/finger_position", 1, finger_pose_callback);
 
 	//publish the velocities
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -378,11 +449,30 @@ int main(int argc, char **argv)
 	
 	int iterations = getIterations("Enter the number of iterations to perform: ");
 	
-	up_down(node_handle, 0.2, 1);
+	//start recording data
+	record_haptics = true;
 
-//	circle_behavior(node_handle, .2, 1, 5);
+	for(int trial = 0; trial < iterations; trial++)
+	{
+		//TODO: initialize empty vectors for each topic
+		
+		up_down(node_handle, 0.2, 1);
+		
+		//behaviorName_trial#_liquid_typeOfDataRecorded.csv
+//		std::string file_path = "/path/to/file" + "/example.csv";
+		
+//		int vectorLength = efforts_data.size();
+		
+//		writeToFile(file_path, vectorLength);
+		
+		//TODO: save the vectors to CSV or TXT
+
+	//	circle_behavior(node_handle, .2, 1, 5);
 	
-	pause(node_handle, 5);
+		pause(node_handle, 5);
 
-	back_and_forth(node_handle, .2, 1);
+		back_and_forth(node_handle, .2, 1);
+	}
+	
+	record_haptics = false;
 }
