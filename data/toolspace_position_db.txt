@@ -1,0 +1,5 @@
+//put in values from the up_down_pose.txt and make it look like jointspace_position_db.txt
+3
+home
+side_view
+handover_front
