@@ -21,7 +21,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-
+#include <string>
 
 #define JOINTS 8
 
@@ -378,7 +378,7 @@ void write_to_file(std::string file_name, int vector_length, std::vector<double>
 {
 	//set file up to be written to
 	std::fstream file_stream;
-	file_stream.open(file_name, std::fstream::in);
+	file_stream.open(file_name.c_str(), std::fstream::in);
 	
 	ros::spinOnce();
 	
@@ -423,6 +423,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+       
+
 	//start recording data
 	record_haptics = true;
 
@@ -431,7 +433,12 @@ int main(int argc, char **argv)
 		//TODO: initialize empty vectors for each topic
 		
 		up_and_down(node_handle, 0.2, 1);
+
+		//TODO: replace hapctics...maybe make this a method?
+		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + std::to_string(trial) + ".csv";
 		
+		write_to_file(file_name, vector_length, the_data);
+
 		//behaviorName_trial#_liquid_typeOfDataRecorded.csv
 //		std::string file_path = "/path/to/file" + "/example.csv";
 		
