@@ -20,6 +20,8 @@
 #include <complex.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
+
 
 #define JOINTS 8
 
@@ -372,24 +374,26 @@ std::string get_liquid(std::string message)
 }
 
 //write to file
-void writeToFile(std::string file_path, int vectorLength, std::vector theData)
+void write_to_file(std::string file_name, int vector_length, std::vector<double> the_data)
 {
 	//set file up to be written to
 	std::fstream file_stream;
-	file_stream.open(file_path, std::fstream::in);
+	file_stream.open(file_name, std::fstream::in);
 	
 	ros::spinOnce();
 	
 	//TODO: add data format
 	file_stream << "Data format: ";
 	
-	for(int index = 0; index < vectorLength; index++)
+	for(int index = 0; index < vector_length; index++)
 	{
 		//pass in the vector 
-		file_stream << theData.at(index) << ", ";
+		file_stream << the_data.at(index) << ", ";
 	}
 	
 	file_stream << "\n";
+
+	file_stream.close();
 }
 
 
