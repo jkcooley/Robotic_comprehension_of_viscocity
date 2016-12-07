@@ -374,7 +374,7 @@ std::string get_liquid(std::string message)
 }
 
 //write to file
-void write_to_file(std::string file_name, int vector_length, std::vector<double> the_data)
+/*void write_to_file(std::string file_name, int vector_length, std::vector<double> the_data)
 {
 	//set file up to be written to
 	std::fstream file_stream;
@@ -394,7 +394,7 @@ void write_to_file(std::string file_name, int vector_length, std::vector<double>
 	file_stream << "\n";
 
 	file_stream.close();
-}
+}*/
 
 
 //call functions to get data
@@ -435,9 +435,9 @@ int main(int argc, char **argv)
 		up_and_down(node_handle, 0.2, 1);
 
 		//TODO: replace hapctics...maybe make this a method?
-		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + std::to_string(trial) + ".csv";
+//		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + std::to_string(trial) + ".csv";
 		
-		write_to_file(file_name, vector_length, the_data);
+//		write_to_file(file_name, vector_length, the_data);
 
 		//behaviorName_trial#_liquid_typeOfDataRecorded.csv
 //		std::string file_path = "/path/to/file" + "/example.csv";
