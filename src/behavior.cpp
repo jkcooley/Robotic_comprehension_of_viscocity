@@ -413,7 +413,7 @@ int main(int argc, char **argv)
 
 	int iterations = get_iterations("Enter the number of iterations to perform: ");
 	
-	if (liquid.compare("quit") == 0 || iteration == -1)
+	if (liquid.compare("quit") == 0 || iterations == -1)
 	{
 		return -1;
 	}
