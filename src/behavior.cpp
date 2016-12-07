@@ -17,10 +17,9 @@
 #include <jaco_msgs/HomeArm.h>
 #include <segbot_arm_manipulation/arm_utils.h>
 #include <cmath>
-#include <math.h>
-#include <stdio.h>
 #include <complex.h>
 #include <iostream>
+#include <fstream>
 
 #define JOINTS 8
 
@@ -66,7 +65,7 @@ void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
 	pose_stamped = *message;
     	heard_pose_stamped = true;
     
-    	if (record_haptics)\
+    	if (record_haptics)
 	{
 		//TODO: add the current message to a vector of poses
 		
@@ -373,23 +372,25 @@ std::string get_liquid(std::string message)
 }
 
 //write to file
-/*void writeToFile(std::string file_path, int vectorLength, std::vector theData)
+void writeToFile(std::string file_path, int vectorLength, std::vector theData)
 {
-	std::ofstream file;
-	file.open(file_path.c_str());
+	//set file up to be written to
+	std::fstream file_stream;
+	file_stream.open(file_path, std::fstream::in);
 	
 	ros::spinOnce();
 	
-	file << "Data format: ";
+	//TODO: add data format
+	file_stream << "Data format: ";
 	
 	for(int index = 0; index < vectorLength; index++)
 	{
-		//TODO: pass in the vector 
-		file << theData.at(index) << ", ";
+		//pass in the vector 
+		file_stream << theData.at(index) << ", ";
 	}
 	
-	file << "\n";
-}*/
+	file_stream << "\n";
+}
 
 
 //call functions to get data
