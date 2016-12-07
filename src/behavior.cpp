@@ -320,12 +320,12 @@ int get_iterations(std::string message)
 		getline(std::cin, input);
 		
 	 	//if a newline was entered, print the request again
-		if (input.compare("\n"))
+		if (input.compare("\n") == 0)
 			std::cout <<  message;
 		
 		//if "quit" was entered, quit
 		else if (input.compare("quit") == 0)
-			return -1;
+			break;
 
 		//read the number of iterations from the user input
 		else 
