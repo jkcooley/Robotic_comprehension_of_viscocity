@@ -100,7 +100,7 @@ void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitio
 
 	//TODO: can we put the duration and stuff here?
 
-	for(int rep = 0; rep < numRepetitions; rep++)
+	for(int rep = 0; rep < num_repetitions; rep++)
 	{
 		velocity_message.twist.linear.z = velocity; 
 	
@@ -169,9 +169,9 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 	velocity_message.twist.angular.z = 0.0;
 	
 	
-	for (int i = 0; i < numRepetitions; i++)
+	for (int i = 0; i < num_repetitions; i++)
 	{
-		velocityMsg.twist.linear.x = velocity;
+		velocity_message.twist.linear.x = velocity;
 
 		//TODO: 2 secs or 1 sec?
 		double duration = 2.0; //2 seconds
@@ -224,12 +224,12 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 }
 
 //moves the arm in a circle (using x and y axes)
-void circle_behavior(ros::NodeHandle node_handle, double velocity, int numRepetitions, double radius)
+void circle_behavior(ros::NodeHandle node_handle, double velocity, int num_repetitions, double radius)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 
-	for(int rep = 0; rep < numRepetitions; rep++)
+	for(int rep = 0; rep < num_repetitions; rep++)
 	{
 		double timeout_seconds = 8.0;
 		int rate_hertz = 100;
@@ -364,9 +364,9 @@ std::string get_liquid(std::string message)
 		//return the user input (should be the name of the liquid)
 		else 
 		{
-			ROS_INFO("liquid: %s", input.data.c_str());
+			ROS_INFO("liquid: %s", input);
 	
-			return input.data.c_str();
+			return input;
 		}
 	}
 }
