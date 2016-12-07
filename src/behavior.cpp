@@ -1,5 +1,5 @@
 //tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
-
+//Names: JosieKate Cooley and Jacqueline Gibson
 //TODO: delete unnecessary methods / comments (what of this do we use?)
 
 #include <ros/ros.h>
