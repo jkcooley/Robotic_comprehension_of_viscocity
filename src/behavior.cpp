@@ -364,7 +364,7 @@ std::string get_liquid(std::string message)
 		//return the user input (should be the name of the liquid)
 		else 
 		{
-			ROS_INFO("liquid: %s", input.data.c_str());
+			ROS_INFO_STREAM("liquid: %s", input);
 	
 			return input;
 		}
