@@ -64,9 +64,10 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
 {
 	pose_stamped = *message;
-    heard_pose_stamped = true;
+    	heard_pose_stamped = true;
     
-    if (record_haptics){
+    	if (record_haptics)\
+	{
 		//TODO: add the current message to a vector of poses
 		
 	}
@@ -76,10 +77,10 @@ void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
 void joint_efforts_callback(const sensor_msgs::JointStateConstPtr &message)
 {
 	joint_efforts = *message;
-    heard_efforts = true;
+    	heard_efforts = true;
     
-    if(record_haptics)
-	{
+    	if (record_haptics)
+    	{
 //		efforts_data.push_back(joint_efforts);
 	}
 }
@@ -229,7 +230,7 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int num_repet
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 
-	for(int rep = 0; rep < num_repetitions; rep++)
+	for (int rep = 0; rep < num_repetitions; rep++)
 	{
 		double timeout_seconds = 8.0;
 		int rate_hertz = 100;
@@ -243,7 +244,7 @@ void circle_behavior(ros::NodeHandle node_handle, double velocity, int num_repet
 		double magnitude = 0.2;
 	
 		ros::Rate r(rate_hertz);
-		for(int i = 0; i < (int)timeout_seconds * rate_hertz; i++) 
+		for (int i = 0; i < (int)timeout_seconds * rate_hertz; i++) 
 		{	
 			linear_angle_x += (2 * PI) / (timeout_seconds * rate_hertz);
 			linear_vel_x = magnitude * sin(linear_angle_x);
@@ -320,12 +321,12 @@ int get_iterations(std::string message)
 		getline(std::cin, input);
 		
 	 	//if a newline was entered, print the request again
-		if (input.compare("\n") == 0)
+		if (input.compare("") == 0)
 			std::cout <<  message;
 		
 		//if "quit" was entered, quit
 		else if (input.compare("quit") == 0)
-			break;
+			return -1;
 
 		//read the number of iterations from the user input
 		else 
@@ -354,12 +355,12 @@ std::string get_liquid(std::string message)
 		getline(std::cin, input);
 	
 		//if a newline was entered, print the request again	
-		if (input.compare("\n") == 0)
+		if (input.compare("") == 0)
 			std::cout <<  message;
 		
 		//if "quit" was entered, quit
 		else if (input.compare("quit") == 0)
-			break;
+			return input;
 			
 		//return the user input (should be the name of the liquid)
 		else 
@@ -409,13 +410,18 @@ int main(int argc, char **argv)
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 	
 	std::string liquid = get_liquid("Enter the name of the liquid being tested: ");
-	
+
 	int iterations = get_iterations("Enter the number of iterations to perform: ");
 	
+	if (liquid.compare("quit") == 0 || iteration == -1)
+	{
+		return -1;
+	}
+
 	//start recording data
 	record_haptics = true;
 
-	for(int trial = 0; trial < iterations; trial++)
+	for (int trial = 0; trial < iterations; trial++)
 	{
 		//TODO: initialize empty vectors for each topic
 		
