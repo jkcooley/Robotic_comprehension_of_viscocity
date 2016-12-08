@@ -28,7 +28,7 @@
 //describes the state of a set of torque-controlled joints - name, position, velocity, effort (http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/JointState.html)
 sensor_msgs::JointState joint_state;
 bool heard_state;
-std::vector<sensor_msgs::JointState> pose_stamped_data; 
+std::vector<sensor_msgs::JointState> joint_state_data; 
 
 //pose with reference coordinate frame and timestamp (http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html)
 geometry_msgs::PoseStamped pose_stamped;
