@@ -28,26 +28,26 @@
 //describes the state of a set of torque-controlled joints - name, position, velocity, effort (http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/JointState.html)
 sensor_msgs::JointState joint_state;
 bool heard_state;
+std::vector<sensor_msgs::JointState> pose_stamped_data; 
 
 //pose with reference coordinate frame and timestamp (http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html)
 geometry_msgs::PoseStamped pose_stamped;
 bool heard_pose_stamped;
+std::vector<geometry_msgs::PoseStamped> pose_stamped_data; 
 
 //http://docs.ros.org/hydro/api/jaco_msgs/html/msg/FingerPosition.html - note that this robot does not have a finger 3
 sensor_msgs::JointState joint_efforts;
-//jaco_ros::jaco_arm_driver/out/finger_position finger_pose;
 bool heard_efforts;
-std::vector<float> efforts_data;
+std::vector<sensor_msgs::JointState> efforts_data;
+//TODO: remove this? 
+//jaco_ros::jaco_arm_driver/out/finger_position finger_pose;
 
 //flag for recording
 bool record_haptics;
-std::vector<float> pose_stamped_data; 
 
 //global publisher for cartesian velocity
 ros::Publisher velocity_pub;
 
-//the name of the csv file to store the data in 
-std::string file_name;
 
 //callback function for joint state
 void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
@@ -70,7 +70,7 @@ void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
     	if (record_haptics)
 	{
 		//TODO: add the current message to a vector of poses
-		
+		pose_stamped_data.push_back(pose_stamped);
 	}
 }
 
@@ -426,47 +426,43 @@ int main(int argc, char **argv)
 	//start recording data
 	record_haptics = true;
 
-	int repetitions = 1;
-
+	int repetitions = 1, vector_length = efforts_data.size();
 	double velocity = 0.2, pause_time = 3;
+	//the name of the csv file to store the data in 
+	std::string file_name;
 
+	//run trials for up_and_down
 	for (int trial = 1; trial <= iterations; trial++)
 	{
 		//TODO: initialize empty vectors for each topic
-		
-		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
-		
-		ROS_INFO_STREAM("file_name: " << file_name);
-
-		up_and_down(node_handle, velocity, repetitions);
-
 		//TODO: replace hapctics...maybe make this a method?
-		//TODO: the compiler suggested boost::to_string instead of std::to_string and appears to accept it now
-		
-//		write_to_file(file_name, vector_length, the_data);
-
-		//behaviorName_trial#_liquid_typeOfDataRecorded.csv
-//		std::string file_path = "/path/to/file" + "/example.csv";
-		
-		int vector_length = efforts_data.size();
-		
+		file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
+		ROS_INFO_STREAM("file_name: " << file_name);
+		//pause between trials
+		pause(node_handle, pause_time);
+		up_and_down(node_handle, velocity, repetitions);
 		write_to_file(file_name, vector_length, efforts_data);
-		
-		//TODO: save the vectors to CSV or TXT
-
-		file_name = "back_and_forth_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
-
-		pause(node_handle, pause_time);
-
-		back_and_forth(node_handle, velocity, repetitions);
-
-		pause(node_handle, pause_time);
-
-		circle(node_handle, velocity, repetitions, 5);
-
-		//pause between trails
-		pause(node_handle, pause_time);
 	}
 	
+	//run trials for back_and_forth
+	for (int trial = 1; trial <= iterations; trial++)
+	{
+		file_name = "back_and_forth_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
+		ROS_INFO_STREAM("file_name: " << file_name);
+		pause(node_handle, pause_time);
+		back_and_forth(node_handle, velocity, repetitions);
+		write_to_file(file_name, vector_length, efforts_data);
+	}
+
+	//run trials for 
+	for (int trial = 1; trial <= iterations; trial++)
+	{
+		file_name = "circle_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
+		ROS_INFO_STREAM("file_name: " << file_name);
+		pause(node_handle, pause_time);
+		circle(node_handle, velocity, repetitions, 5);
+		write_to_file(file_name, vector_length, efforts_data);
+	}
+
 	record_haptics = false;
 }
