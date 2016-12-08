@@ -374,7 +374,7 @@ std::string get_liquid(std::string message)
 }
 
 //write to file
-/*void write_to_file(std::string file_name, int vector_length, std::vector<double> the_data)
+void write_to_file(std::string file_name, int vector_length, std::vector<float> the_data)
 {
 	//set file up to be written to
 	std::fstream file_stream;
@@ -394,7 +394,7 @@ std::string get_liquid(std::string message)
 	file_stream << "\n";
 
 	file_stream.close();
-}*/
+}
 
 
 //call functions to get data
@@ -423,8 +423,6 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-       
-
 	//start recording data
 	record_haptics = true;
 
@@ -435,24 +433,28 @@ int main(int argc, char **argv)
 		up_and_down(node_handle, 0.2, 1);
 
 		//TODO: replace hapctics...maybe make this a method?
-//		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + std::to_string(trial) + ".csv";
+		//TODO: the compiler suggested boost::to_string instead of std::to_string and appears to accept it now
+		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
 		
 //		write_to_file(file_name, vector_length, the_data);
 
 		//behaviorName_trial#_liquid_typeOfDataRecorded.csv
 //		std::string file_path = "/path/to/file" + "/example.csv";
 		
-//		int vectorLength = efforts_data.size();
+		int vector_length = efforts_data.size();
 		
-//		writeToFile(file_path, vectorLength);
+		write_to_file(file_name, vector_length, efforts_data);
 		
 		//TODO: save the vectors to CSV or TXT
 
 	//	circle_behavior(node_handle, .2, 1, 5);
 	
-		pause(node_handle, 5);
+		pause(node_handle, 3);
 
 		back_and_forth(node_handle, .2, 1);
+
+		//pause between trails
+		pause(node_handle, 3);
 	}
 	
 	record_haptics = false;
