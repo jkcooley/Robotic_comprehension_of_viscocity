@@ -379,23 +379,40 @@ std::string get_liquid(std::string message)
 }
 
 //write to file
-void write_to_file(std::string file_name, int vector_length, std::vector<E> the_data)
+void write_to_file(std::string joint_state_file_name, int joint_state_vector_length, std::vector<sensor_msgs::JointState> joint_state_data, std::string efforts_file_name, int efforts_vector_length, std::vector<sensor_msgs::JointState> efforts_data, std::string pose_stamped_file_name, int pose_stamped_vector_length, std::vector<geometry_msgs::PoseStamped> pose_stamped_data)
 {
 	//set file up to be written to
 	std::fstream file_stream;
-	file_stream.open(file_name.c_str(), std::fstream::in);
+	file_stream.open(joint_state_file_name.c_str(), std::fstream::in);
+	file_stream.open(efforts_file_name.c_str(), std::fstream::in);
+	file_stream.open(pose_stamped_file_name.c_str(), std::fstream::in);	
 	
 	ros::spinOnce();
 	
 	//TODO: add data format
 	file_stream << "Data format: ";
-	
-	for(int index = 0; index < vector_length; index++)
+
+	//store joint_state data
+	for (int index = 0; index < joint_state_vector_length; index++)
 	{
 		//pass in the vector 
-		file_stream << the_data.at(index) << ", ";
+		file_stream << joint_state_data.at(index) << ", ";
 	}
-	
+			
+	//store efforts data
+	for (int index = 0; index < efforts_vector_length; index++)
+	{
+		//pass in the vector 
+		file_stream << efforts_data.at(index) << ", ";
+	}
+
+	//store pose_stamped data 
+	for (int index = 0; index < pose_stamped_vector_length; index++)
+	{
+		//pass in the vector 
+		file_stream << pose_stamped_data.at(index) << ", ";
+	}
+
 	file_stream << "\n";
 
 	file_stream.close();
@@ -431,7 +448,7 @@ int main(int argc, char **argv)
 	//start recording data
 	record_haptics = true;
 
-	int repetitions = 1, vector_length = efforts_data.size();
+	int repetitions = 1, joint_state_vector_length = joint_state_data.size(), efforts_vector_length = efforts_data.size(), pose_stamped_vector_length = pose_stamped_data.size();
 	double velocity = 0.2, pause_time = 3;
 	//the name of the csv file to store the data in 
 	std::string file_name;
@@ -441,8 +458,12 @@ int main(int argc, char **argv)
 	{
 		//TODO: initialize empty vectors for each topic
 		//TODO: replace hapctics...maybe make this a method?
-		file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("file_name: " << file_name);
+		joint_state_file_name = "up_and_down_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = "up_and_down_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = "up_and_down_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
+		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		//pause between trials
 		pause(node_handle, pause_time);
 		up_and_down(node_handle, velocity, repetitions);
@@ -452,8 +473,12 @@ int main(int argc, char **argv)
 	//run trials for back_and_forth
 	for (int trial = 1; trial <= iterations; trial++)
 	{
-		file_name = "back_and_forth_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
+		joint_state_file_name = "back_and_forth_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = "back_and_forth_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = "back_and_forth_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("file_name: " << file_name);
+		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
 		back_and_forth(node_handle, velocity, repetitions);
 		write_to_file(file_name, vector_length, efforts_data);
@@ -462,8 +487,12 @@ int main(int argc, char **argv)
 	//run trials for 
 	for (int trial = 1; trial <= iterations; trial++)
 	{
-		file_name = "circle_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
+		joint_state_file_name = "circle_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = "circle_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = "circle_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("file_name: " << file_name);
+		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
 		circle(node_handle, velocity, repetitions, 5);
 		write_to_file(file_name, vector_length, efforts_data);
