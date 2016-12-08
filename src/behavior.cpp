@@ -265,8 +265,8 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 			velocity_message.twist.angular.y = 0.0;
 			velocity_message.twist.angular.z = 0.0;
 		
-			ROS_INFO("linear_vel_z = %f", linear_vel_z);
-			ROS_INFO("linear_vel_x = %f", linear_vel_x);
+//			ROS_INFO("linear_vel_z = %f", linear_vel_z);
+//			ROS_INFO("linear_vel_x = %f", linear_vel_x);
 			pub_velocity.publish(velocity_message);
 		
 			ros::spinOnce();
