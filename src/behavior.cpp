@@ -430,11 +430,14 @@ int main(int argc, char **argv)
 	{
 		//TODO: initialize empty vectors for each topic
 		
+		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
+		
+		printf("file_name: %s", file_name);
+
 		up_and_down(node_handle, 0.2, 1);
 
 		//TODO: replace hapctics...maybe make this a method?
 		//TODO: the compiler suggested boost::to_string instead of std::to_string and appears to accept it now
-		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
 		
 //		write_to_file(file_name, vector_length, the_data);
 
