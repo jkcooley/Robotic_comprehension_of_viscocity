@@ -476,7 +476,7 @@ int main(int argc, char **argv)
 		joint_state_file_name = "back_and_forth_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
 		efforts_file_name = "back_and_forth_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
 		pose_stamped_file_name = "back_and_forth_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("file_name: " << file_name);
+		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
@@ -490,7 +490,7 @@ int main(int argc, char **argv)
 		joint_state_file_name = "circle_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
 		efforts_file_name = "circle_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
 		pose_stamped_file_name = "circle_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("file_name: " << file_name);
+		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
