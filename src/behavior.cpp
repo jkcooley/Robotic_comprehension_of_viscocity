@@ -432,7 +432,7 @@ int main(int argc, char **argv)
 		
 		std::string file_name = "up_and_down_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
 		
-		printf("file_name: %s", file_name);
+		ROS_INFO_STREAM("file_name: " << file_name);
 
 		up_and_down(node_handle, 0.2, 1);
 
