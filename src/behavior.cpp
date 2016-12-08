@@ -451,7 +451,7 @@ int main(int argc, char **argv)
 	int repetitions = 1, joint_state_vector_length = joint_state_data.size(), efforts_vector_length = efforts_data.size(), pose_stamped_vector_length = pose_stamped_data.size();
 	double velocity = 0.2, pause_time = 3;
 	//the name of the csv file to store the data in 
-	std::string file_name;
+	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name;
 
 	//run trials for up_and_down
 	for (int trial = 1; trial <= iterations; trial++)
@@ -467,7 +467,7 @@ int main(int argc, char **argv)
 		//pause between trials
 		pause(node_handle, pause_time);
 		up_and_down(node_handle, velocity, repetitions);
-		write_to_file(file_name, vector_length, efforts_data);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
 	}
 	
 	//run trials for back_and_forth
@@ -481,7 +481,7 @@ int main(int argc, char **argv)
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
 		back_and_forth(node_handle, velocity, repetitions);
-		write_to_file(file_name, vector_length, efforts_data);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
 	}
 
 	//run trials for 
@@ -495,7 +495,7 @@ int main(int argc, char **argv)
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
 		circle(node_handle, velocity, repetitions, 5);
-		write_to_file(file_name, vector_length, efforts_data);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
 	}
 
 	record_haptics = false;
