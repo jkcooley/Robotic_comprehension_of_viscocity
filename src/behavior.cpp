@@ -58,6 +58,11 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 		joint_state = *message;
 		heard_state = true;
 	}
+
+	if (record_haptics)
+	{
+		joint_state_data.push_back(joint_state);
+	}
 }
 
 //callback function for stamped position
@@ -82,7 +87,7 @@ void joint_efforts_callback(const sensor_msgs::JointStateConstPtr &message)
     
     	if (record_haptics)
     	{
-//		efforts_data.push_back(joint_efforts);
+		efforts_data.push_back(joint_efforts);
 	}
 }
 
@@ -374,7 +379,7 @@ std::string get_liquid(std::string message)
 }
 
 //write to file
-void write_to_file(std::string file_name, int vector_length, std::vector<float> the_data)
+void write_to_file(std::string file_name, int vector_length, std::vector<E> the_data)
 {
 	//set file up to be written to
 	std::fstream file_stream;
