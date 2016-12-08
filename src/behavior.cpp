@@ -226,7 +226,7 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 }
 
 //moves the arm in a circle (using x and y axes)
-void circle_behavior(ros::NodeHandle node_handle, double velocity, int num_repetitions, double radius)
+void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, double radius)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -426,7 +426,11 @@ int main(int argc, char **argv)
 	//start recording data
 	record_haptics = true;
 
-	for (int trial = 0; trial < iterations; trial++)
+	int repetitions = 1;
+
+	double velocity = 0.2, pause_time = 3;
+
+	for (int trial = 1; trial <= iterations; trial++)
 	{
 		//TODO: initialize empty vectors for each topic
 		
@@ -434,7 +438,7 @@ int main(int argc, char **argv)
 		
 		ROS_INFO_STREAM("file_name: " << file_name);
 
-		up_and_down(node_handle, 0.2, 1);
+		up_and_down(node_handle, velocity, repetitions);
 
 		//TODO: replace hapctics...maybe make this a method?
 		//TODO: the compiler suggested boost::to_string instead of std::to_string and appears to accept it now
@@ -450,14 +454,18 @@ int main(int argc, char **argv)
 		
 		//TODO: save the vectors to CSV or TXT
 
-	//	circle_behavior(node_handle, .2, 1, 5);
-	
-		pause(node_handle, 3);
+		file_name = "back_and_forth_" + liquid + "_haptics" + "_trial_" + boost::to_string(trial) + ".csv";
 
-		back_and_forth(node_handle, .2, 1);
+		pause(node_handle, pause_time);
+
+		back_and_forth(node_handle, velocity, repetitions);
+
+		pause(node_handle, pause_time);
+
+		circle(node_handle, velocity, repetitions, 5);
 
 		//pause between trails
-		pause(node_handle, 3);
+		pause(node_handle, pause_time);
 	}
 	
 	record_haptics = false;
