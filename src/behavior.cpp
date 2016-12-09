@@ -22,6 +22,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <ros/package.h>
 
 #define JOINTS 8
 
@@ -112,7 +113,7 @@ void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitio
 		velocity_message.twist.linear.z = velocity; 
 	
 		//TODO: 2 secs or 1 sec?
-		double duration = 2.0; //2 seconds
+		double duration = 5.0; //5 seconds
 		double elapsed_time = 0.0;
 	
 		double pub_rate = 40.0; //we publish at 40 hz
@@ -180,8 +181,7 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 	{
 		velocity_message.twist.linear.x = velocity;
 
-		//TODO: 2 secs or 1 sec?
-		double duration = 2.0; //2 seconds
+		double duration = 5.0; //5 seconds
 		double elapsed_time = 0.0;
 		
 		double pub_rate = 40.0; //we publish at 40 hz
@@ -244,28 +244,28 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 	
 		double linear_angle_x = 0;
 		double linear_vel_x;
-		double linear_angle_z = 0;
-		double linear_vel_z;
+		double linear_angle_y = 0;
+		double linear_vel_y;
 		//should make the circle bigger or smaller
-		double magnitude = 0.2;
+		double magnitude = radius;
 	
 		ros::Rate r(rate_hertz);
 		for (int i = 0; i < (int)timeout_seconds * rate_hertz; i++) 
 		{	
 			linear_angle_x += (2 * PI) / (timeout_seconds * rate_hertz);
 			linear_vel_x = magnitude * sin(linear_angle_x);
-			linear_angle_z += (2 * PI) / (timeout_seconds * rate_hertz);
-			linear_vel_z = magnitude * cos(linear_angle_z);
+			linear_angle_y += (2 * PI) / (timeout_seconds * rate_hertz);
+			linear_vel_y = magnitude * cos(linear_angle_y);
 		
 			velocity_message.twist.linear.x = -linear_vel_x;
-			velocity_message.twist.linear.y = 0.0;
-			velocity_message.twist.linear.z = linear_vel_z;
+			velocity_message.twist.linear.y = linear_vel_y;
+			velocity_message.twist.linear.z = 0.0;
 		
 			velocity_message.twist.angular.x = 0.0;
 			velocity_message.twist.angular.y = 0.0;
 			velocity_message.twist.angular.z = 0.0;
 		
-//			ROS_INFO("linear_vel_z = %f", linear_vel_z);
+//			ROS_INFO("linear_vel_y = %f", linear_vel_y);
 //			ROS_INFO("linear_vel_x = %f", linear_vel_x);
 			pub_velocity.publish(velocity_message);
 		
@@ -378,44 +378,73 @@ std::string get_liquid(std::string message)
 	}
 }
 
+void print_array(std::ofstream file_stream, std::string file_name, float64[] to_print)
+{
+	file_stream
+
+	file_stream << "[";
+
+	for (int index = 0; index < to_print.length; index++)
+	{
+		file_stream << to_print[index] << ", ";
+	} 
+	
+	file_stream << "]";
+}
+
 //write to file
 void write_to_file(std::string joint_state_file_name, int joint_state_vector_length, std::vector<sensor_msgs::JointState> joint_state_data, std::string efforts_file_name, int efforts_vector_length, std::vector<sensor_msgs::JointState> efforts_data, std::string pose_stamped_file_name, int pose_stamped_vector_length, std::vector<geometry_msgs::PoseStamped> pose_stamped_data)
 {
 	//set file up to be written to
-	std::fstream file_stream;
-	file_stream.open(joint_state_file_name.c_str(), std::fstream::in);
-	file_stream.open(efforts_file_name.c_str(), std::fstream::in);
-	file_stream.open(pose_stamped_file_name.c_str(), std::fstream::in);	
+	std::ofstream joint_state_file_stream;
+	std::ofstream efforts_file_stream;
+	std::ofstream pose_stamped_file_stream;
+	joint_state_file_stream.open(joint_state_file_name.c_str(), std::ofstream::out);
+	efforts_file_stream.open(efforts_file_name.c_str(), std::ofstream::out);
+	pose_stamped_file_stream.open(pose_stamped_file_name.c_str(), std::ofstream::out);	
 	
 	ros::spinOnce();
 	
+//	ROS_INFO_STREAM("Files should have been created");
+
 	//TODO: add data format
-	file_stream << "Data format: ";
+	joint_state_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
+	efforts_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
+	pose_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/TwistStamped.html\nData format:\nHeader header\nTwist twist\n\n\n";
 
 	//store joint_state data
 	for (int index = 0; index < joint_state_vector_length; index++)
 	{
+		sensor_msgs::JointState current = joint_state_data[index];	
 		//pass in the vector 
-		file_stream << joint_state_data.at(index) << ", ";
+		joint_state_file_stream << current.name  << "\n";
+
+		print_array(joint_state_file_stream, file_name, current.position);
+		print_array(joint_state_file_stream, file_name, current.velocity);
+		print_array(joint_state_file_stream, file_name, current.effort);
 	}
 			
 	//store efforts data
 	for (int index = 0; index < efforts_vector_length; index++)
 	{
 		//pass in the vector 
-		file_stream << efforts_data.at(index) << ", ";
+		efforts_file_stream << efforts_data.at(index) << ", ";
 	}
 
 	//store pose_stamped data 
 	for (int index = 0; index < pose_stamped_vector_length; index++)
 	{
 		//pass in the vector 
-		file_stream << pose_stamped_data.at(index) << ", ";
+		pose_stamped_file_stream << pose_stamped_data.at(index) << ", ";
 	}
 
-	file_stream << "\n";
+	joint_state_file_stream << "\n";
+	efforts_file_stream << "\n";
+	pose_stamped_file_stream << "\n";
 
-	file_stream.close();
+	joint_state_file_stream.close();
+	efforts_file_stream.close();
+	pose_stamped_file_stream.close();
 }
 
 
@@ -449,18 +478,29 @@ int main(int argc, char **argv)
 	record_haptics = true;
 
 	int repetitions = 1, joint_state_vector_length = joint_state_data.size(), efforts_vector_length = efforts_data.size(), pose_stamped_vector_length = pose_stamped_data.size();
-	double velocity = 0.2, pause_time = 3;
+	double velocity = 1, pause_time = 3;
 	//the name of the csv file to store the data in 
-	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name;
+	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name, path = "/home/users/fri/viscosity_data/";
 
+//	path = ros::robotic_comprehension_of_viscosity::getPath("roslib");
+
+// 	using robotic_comprehension_of_viscocity::V_string;
+//	using robotic_comprehension_of_viscosity::V_string;
+//  	V_string packages;
+//  	ros::package::getAll(packages);
+
+	//ROS get current directory
+	// + /data/file_name
+	//if all else fails, try ofstream
+	
 	//run trials for up_and_down
 	for (int trial = 1; trial <= iterations; trial++)
 	{
 		//TODO: initialize empty vectors for each topic
 		//TODO: replace hapctics...maybe make this a method?
-		joint_state_file_name = "up_and_down_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = "up_and_down_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = "up_and_down_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		joint_state_file_name = path + "up_and_down_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = path + "up_and_down_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = path + "up_and_down_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
@@ -473,9 +513,9 @@ int main(int argc, char **argv)
 	//run trials for back_and_forth
 	for (int trial = 1; trial <= iterations; trial++)
 	{
-		joint_state_file_name = "back_and_forth_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = "back_and_forth_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = "back_and_forth_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		joint_state_file_name = path + "back_and_forth_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = path + "back_and_forth_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = path + "back_and_forth_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
@@ -487,14 +527,14 @@ int main(int argc, char **argv)
 	//run trials for 
 	for (int trial = 1; trial <= iterations; trial++)
 	{
-		joint_state_file_name = "circle_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = "circle_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = "circle_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		joint_state_file_name = path + "circle_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = path + "circle_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = path + "circle_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
-		circle(node_handle, velocity, repetitions, 5);
+		circle(node_handle, velocity, repetitions, .7);
 		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
 	}
 
