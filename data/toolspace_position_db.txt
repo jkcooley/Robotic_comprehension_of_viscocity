@@ -1,5 +1,2 @@
-//put in values from the up_down_pose.txt and make it look like jointspace_position_db.txt
-3
-home
-side_view
-handover_front
+1
+start	0.0895123,-0.926885,-0.373449,-2.71438,1.7136,-0.996028,1.029,1.029
