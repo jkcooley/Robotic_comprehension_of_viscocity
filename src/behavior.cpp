@@ -1,6 +1,5 @@
 //tutorials used: https://github.com/utexas-bwi/segbot_arm/tree/master/segbot_arm_tutorials/src
 //Names: JosieKate Cooley and Jacqueline Gibson
-//TODO: delete unnecessary methods / comments (what of this do we use?)
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -43,12 +42,8 @@ std::vector<geometry_msgs::PoseStamped> pose_stamped_data;
 sensor_msgs::JointState joint_efforts;
 bool heard_efforts;
 std::vector<sensor_msgs::JointState> efforts_data;
-//TODO: remove this? 
-//jaco_ros::jaco_arm_driver/out/finger_position finger_pose;
 
-//TODO: add wrench 
-//TODO: add twisting motion
-//mico_arm_driver/out/tool_wrench - wrenchStamped, get force and torque, each with .x, .y, and .z
+//TODO: is this different: mico_arm_driver/out/tool_wrench - wrenchStamped, get force and torque, each with .x, .y, and .z
 
 geometry_msgs::WrenchStamped wrench_stamped;
 bool heard_wrench_stamped;
@@ -78,7 +73,6 @@ void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
 }
 
 //callback function for stamped position
-//changed from sensor_msgs because PoseStamped is a geometry_msgs message
 void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
 {
 	pose_stamped = *message;
@@ -86,7 +80,6 @@ void pose_stamped_callback(const geometry_msgs::PoseStampedConstPtr &message)
     
     	if (record_haptics)
 	{
-		//TODO: add the current message to a vector of poses
 		pose_stamped_data.push_back(pose_stamped);
 	}
 }
@@ -103,7 +96,7 @@ void joint_efforts_callback(const sensor_msgs::JointStateConstPtr &message)
 	}
 }
 
-//callback function for wrench
+//callback function for wrench stamped
 void wrench_stamped_callback(const geometry_msgs::WrenchStampedConstPtr &message)
 {
 	wrench_stamped = *message;
@@ -129,17 +122,16 @@ void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitio
 	velocity_message.twist.angular.y = 0.0;
 	velocity_message.twist.angular.z = 0.0;
 
-	//TODO: can we put the duration and stuff here?
-
 	for(int rep = 0; rep < num_repetitions; rep++)
 	{
 		velocity_message.twist.linear.z = velocity; 
 	
-		//TODO: 2 secs or 1 sec?
-		double duration = 5.0; //5 seconds
+		//run for 5 seconds
+		double duration = 5.0; 
 		double elapsed_time = 0.0;
 	
-		double pub_rate = 40.0; //we publish at 40 hz
+		//publish at 40Hz
+		double pub_rate = 40.0;
 		ros::Rate r(pub_rate);
 	
 		while (ros::ok())
@@ -204,13 +196,14 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 	{
 		velocity_message.twist.linear.x = velocity;
 
+		//run for 5 seconds
 		double duration = 5.0; //5 seconds
 		double elapsed_time = 0.0;
 		
-		double pub_rate = 40.0; //we publish at 40 hz
+		//publish at 40Hz
+		double pub_rate = 40.0;
 		ros::Rate r(pub_rate);
 		
-		//TODO: should this be an if instead? 	
 		while (ros::ok())
 		{
 			//collect messages
@@ -269,10 +262,12 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 		double linear_vel_x;
 		double linear_angle_y = 0;
 		double linear_vel_y;
+		
 		//should make the circle bigger or smaller
 		double magnitude = radius;
 	
 		ros::Rate r(rate_hertz);
+		
 		for (int i = 0; i < (int)timeout_seconds * rate_hertz; i++) 
 		{	
 			linear_angle_x += (2 * PI) / (timeout_seconds * rate_hertz);
@@ -283,13 +278,10 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 			velocity_message.twist.linear.x = -linear_vel_x;
 			velocity_message.twist.linear.y = linear_vel_y;
 			velocity_message.twist.linear.z = 0.0;
-		
 			velocity_message.twist.angular.x = 0.0;
 			velocity_message.twist.angular.y = 0.0;
 			velocity_message.twist.angular.z = 0.0;
 		
-//			ROS_INFO("linear_vel_y = %f", linear_vel_y);
-//			ROS_INFO("linear_vel_x = %f", linear_vel_x);
 			pub_velocity.publish(velocity_message);
 		
 			ros::spinOnce();
@@ -313,17 +305,16 @@ void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions)
 	velocity_message.twist.angular.y = 0.0;
 	velocity_message.twist.angular.z = 0.0;
 
-	//TODO: can we put the duration and stuff here?
-
 	for(int rep = 0; rep < num_repetitions; rep++)
 	{
 		velocity_message.twist.linear.x = velocity; 
 	
-		//TODO: 2 secs or 1 sec?
-		double duration = 5.0; //5 seconds
+		//run for 5 seconds
+		double duration = 5.0;
 		double elapsed_time = 0.0;
 	
-		double pub_rate = 40.0; //we publish at 40 hz
+		//we publish at 40Hz
+		double pub_rate = 40.0;
 		ros::Rate r(pub_rate);
 	
 		while (ros::ok())
@@ -385,7 +376,8 @@ void pause(ros::NodeHandle node_handle, double duration)
 
         double elapsed_time = 0.0;
 
-        double pub_rate = 40.0; //we publish at 40 hz
+	//publish at 40Hz
+        double pub_rate = 40.0; 
         ros::Rate r(pub_rate);
  
         while (ros::ok())
@@ -470,38 +462,6 @@ std::string get_liquid(std::string message)
 	}
 }
 
-/*void print_array(std::ofstream file_stream, std::string file_name, std::vector<std_msgs::Float64> to_print)
-{
-	file_stream.open(file_name.c_str(), std::ofstream::app);
-
-	file_stream << "[";
-
-	for (int index = 0; index < to_print.size(); index++)
-	{
-		file_stream << to_print[index] << ", ";
-	} 
-	
-	file_stream << "]";
-
-	file_stream.close();
-}
-
-void print_array_doubles(std::ofstream file_stream, std::string file_name, std::vector<double> to_print)
-{
-	file_stream.open(file_name.c_str(), std::ofstream::app);
-
-	file_stream << "[";
-
-	for (int index = 0; index < to_print.size(); index++)
-	{
-		file_stream << to_print[index] << ", ";
-	} 
-	
-	file_stream << "]";
-
-	file_stream.close();
-}*/
-
 //write to file
 void write_to_file(std::string joint_state_file_name, int joint_state_vector_length, std::vector<sensor_msgs::JointState> joint_state_data, std::string efforts_file_name, int efforts_vector_length, std::vector<sensor_msgs::JointState> efforts_data, std::string pose_stamped_file_name, int pose_stamped_vector_length, std::vector<geometry_msgs::PoseStamped> pose_stamped_data, std::string wrench_stamped_file_name, int wrench_stamped_vector_length, std::vector<geometry_msgs::WrenchStamped> wrench_stamped_data)
 {
@@ -517,20 +477,15 @@ void write_to_file(std::string joint_state_file_name, int joint_state_vector_len
 	
 	ros::spinOnce();
 	
-//	ROS_INFO_STREAM("Files should have been created");
-
 	joint_state_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
 	efforts_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
 	pose_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html\nData format:\nHeader header\nPose pose\n\n\n";
 	wrench_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/WrenchStamped.html\nData format:\nHeader header\nWrench wrench\n\n\n";
 
-	//store joint_state data
+	//store joint_state_data
 	for (int index = 0; index < joint_state_vector_length; index++)
 	{
 		sensor_msgs::JointState current = joint_state_data[index];	
-		//TODO: make sure we don't need a method that writes the name (I don't think we do)
-		//pass in the vector 
-		//joint_state_file_stream << current.name  << "\n";
 
 	        joint_state_file_stream << "[";
 
@@ -549,18 +504,12 @@ void write_to_file(std::string joint_state_file_name, int joint_state_vector_len
                 }
 
                 joint_state_file_stream << "]\n";
-
-//		print_array_doubles(joint_state_file_stream, joint_state_file_name, current.position);
-//		print_array_doubles(joint_state_file_stream, joint_state_file_name, current.velocity);
 	}
 			
-	//store efforts data
+	//store efforts_data
 	for (int index = 0; index < efforts_vector_length; index++)
 	{
 		sensor_msgs::JointState current = efforts_data[index];
-		//pass in the vector 
-//		efforts_file_stream << efforts_data.at(index) << ", ";
-//		print_array(efforts_file_stream, efforts_file_name, current.effort);
 
 		efforts_file_stream << "[";
 
@@ -572,14 +521,13 @@ void write_to_file(std::string joint_state_file_name, int joint_state_vector_len
                 efforts_file_stream << "]\n";
 	}
 
-	//store pose_stamped data 
+	//store pose_stamped_data 
 	for (int index = 0; index < pose_stamped_vector_length; index++)
 	{
 		geometry_msgs::PoseStamped current = pose_stamped_data[index];
-		//pass in the vector 
-//		pose_stamped_file_stream << pose_stamped_data.at(index) << ", ";
-		//TODO: get w/x/y/z from pose.orientation and pose.position? 
-//		print_array(pose_stamped_file_stream, pose_stamped_file_name, current.pose);
+
+		pose_stamped_file_stream << current.header.stamp.sec;
+		pose_stamped_file_stream << current.header.stamp.nsec;
 		pose_stamped_file_stream << current.pose.position.x;
 		pose_stamped_file_stream << current.pose.position.y;
 		pose_stamped_file_stream << current.pose.position.z;
@@ -589,11 +537,13 @@ void write_to_file(std::string joint_state_file_name, int joint_state_vector_len
 		pose_stamped_file_stream << current.pose.orientation.w;
 	}
 
-
+	//store wrench_stamped_data
 	for (int index = 0; index < wrench_stamped_vector_length; index++)
 	{
 		geometry_msgs::WrenchStamped current = wrench_stamped_data[index];		
-
+	
+		wrench_stamped_file_stream << current.header.stamp.sec;
+		wrench_stamped_file_stream << current.header.stamp.nsec;
 		pose_stamped_file_stream << current.wrench.force.x;
 		pose_stamped_file_stream << current.wrench.force.y;
 		pose_stamped_file_stream << current.wrench.force.z;
