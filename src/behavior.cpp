@@ -43,8 +43,7 @@ sensor_msgs::JointState joint_efforts;
 bool heard_efforts;
 std::vector<sensor_msgs::JointState> efforts_data;
 
-//TODO: is this different: mico_arm_driver/out/tool_wrench - wrenchStamped, get force and torque, each with .x, .y, and .z
-
+//torque and force data (http://docs.ros.org/api/geometry_msgs/html/msg/WrenchStamped.html)
 geometry_msgs::WrenchStamped wrench_stamped;
 bool heard_wrench_stamped;
 std::vector<geometry_msgs::WrenchStamped> wrench_stamped_data;
@@ -54,7 +53,6 @@ bool record_haptics;
 
 //global publisher for cartesian velocity
 ros::Publisher velocity_pub;
-
 
 //callback function for joint state
 void joint_state_callback(const sensor_msgs::JointStateConstPtr &message)
@@ -590,17 +588,15 @@ void go_to_start(std::string message)
 //call functions to get data
 int main(int argc, char **argv)
 {
-	//TODO: change the name? 
-	//name the node
-	ros::init(argc, argv, "behavior_1");
+	ros::init(argc, argv, "behaviors");
 
 	ros::NodeHandle node_handle;
 
 	//subscribe to topics
 	ros::Subscriber joint_pose_subscriber = node_handle.subscribe("/joint_states", 1, joint_state_callback);
 	ros::Subscriber pose_stamped_subscriber = node_handle.subscribe("/mico_arm_driver/out/tool_position", 1, pose_stamped_callback);	
+	ros::Subscriber wrench_stamped_subscriber = node_handle.subscribe("/mico_arm_driver/out/tool_wrench", 1, wrench_stamped_callback);	
 	ros::Subscriber joint_efforts_subscriber = node_handle.subscribe("/mico_arm_driver/out/joint_efforts", 1, joint_efforts_callback);
-	//ros::Subscriber finger_pose_subscriber = node_handle.subscribe("/mico_arm_driver/out/finger_position", 1, finger_pose_callback);
 
 	//publish the velocities
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -634,17 +630,6 @@ int main(int argc, char **argv)
 	//the name of the csv file to store the data in 
 	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name, wrench_stamped_file_name, path = "/home/users/fri/viscosity_data/";
 
-//	path = ros::robotic_comprehension_of_viscosity::getPath("roslib");
-
-// 	using robotic_comprehension_of_viscocity::V_string;
-//	using robotic_comprehension_of_viscosity::V_string;
-//  	V_string packages;
-//  	ros::package::getAll(packages);
-
-	//ROS get current directory
-	// + /data/file_name
-	//if all else fails, try ofstream
-	
 	//run trials for up_and_down
 	for (int trial = 1; trial <= iterations; trial++)
 	{

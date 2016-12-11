@@ -57,8 +57,8 @@ include_directories(
 
 ## executables
 
-add_executable(behavior src/behavior.cpp)
-target_link_libraries(behavior ${catkin_LIBRARIES} )
+add_executable(behaviors src/behavior.cpp)
+target_link_libraries(behaviors ${catkin_LIBRARIES} )
 
 ## example task 
 #add_executable(object_handover_delivery_task src/object_handover_delivery_task.cpp)
