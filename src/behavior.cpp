@@ -9,6 +9,7 @@
 #include <math.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/WrenchStamped.h>
 #include <sensor_msgs/JointState.h>
 #include <actionlib/client/simple_action_client.h>
 #include <jaco_msgs/FingerPosition.h>
@@ -23,6 +24,8 @@
 #include <vector>
 #include <string>
 #include <ros/package.h>
+#include <segbot_arm_manipulation/arm_positions_db.h>
+#include <std_msgs/Float64.h>
 
 #define JOINTS 8
 
@@ -42,6 +45,14 @@ bool heard_efforts;
 std::vector<sensor_msgs::JointState> efforts_data;
 //TODO: remove this? 
 //jaco_ros::jaco_arm_driver/out/finger_position finger_pose;
+
+//TODO: add wrench 
+//TODO: add twisting motion
+//mico_arm_driver/out/tool_wrench - wrenchStamped, get force and torque, each with .x, .y, and .z
+
+geometry_msgs::WrenchStamped wrench_stamped;
+bool heard_wrench_stamped;
+std::vector<geometry_msgs::WrenchStamped> wrench_stamped_data;
 
 //flag for recording
 bool record_haptics;
@@ -89,6 +100,18 @@ void joint_efforts_callback(const sensor_msgs::JointStateConstPtr &message)
     	if (record_haptics)
     	{
 		efforts_data.push_back(joint_efforts);
+	}
+}
+
+//callback function for wrench
+void wrench_stamped_callback(const geometry_msgs::WrenchStampedConstPtr &message)
+{
+	wrench_stamped = *message;
+	heard_wrench_stamped = true;
+	
+	if (record_haptics)
+	{
+		wrench_stamped_data.push_back(wrench_stamped);
 	}
 }
 
@@ -276,6 +299,75 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 	}
 }
 
+//moves the hand in a twisting motion for five seconds in either director (L and R)
+void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions)
+{
+	//publish the velocities
+	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
+
+	//construct message
+	geometry_msgs::TwistStamped velocity_message;
+	velocity_message.twist.linear.y = 0.0;
+	velocity_message.twist.linear.z = 0.0;
+	velocity_message.twist.angular.x = 0.0;
+	velocity_message.twist.angular.y = 0.0;
+	velocity_message.twist.angular.z = 0.0;
+
+	//TODO: can we put the duration and stuff here?
+
+	for(int rep = 0; rep < num_repetitions; rep++)
+	{
+		velocity_message.twist.linear.x = velocity; 
+	
+		//TODO: 2 secs or 1 sec?
+		double duration = 5.0; //5 seconds
+		double elapsed_time = 0.0;
+	
+		double pub_rate = 40.0; //we publish at 40 hz
+		ros::Rate r(pub_rate);
+	
+		while (ros::ok())
+		{
+			//collect messages
+			ros::spinOnce();
+		
+			//publish velocity message
+			pub_velocity.publish(velocity_message);
+		
+			r.sleep();
+		
+			elapsed_time += (1.0/pub_rate);
+		
+			if (elapsed_time > duration)
+				break;
+		}
+		
+		velocity_message.twist.linear.z = velocity * -1;
+	
+		elapsed_time = 0.0;
+
+		while (ros::ok())
+		{
+			//collect messages
+			ros::spinOnce();
+		
+			//publish velocity message
+			pub_velocity.publish(velocity_message);
+		
+			r.sleep();
+		
+			elapsed_time += (1.0/pub_rate);
+		
+			if (elapsed_time > duration)
+				break;
+		}
+	}
+
+	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
+	velocity_message.twist.linear.x = 0.0; 
+	pub_velocity.publish(velocity_message);
+}
+
 //publish all 0s (for space between the actions)
 void pause(ros::NodeHandle node_handle, double duration)
 {
@@ -378,79 +470,177 @@ std::string get_liquid(std::string message)
 	}
 }
 
-void print_array(std::ofstream file_stream, std::string file_name, float64[] to_print)
+/*void print_array(std::ofstream file_stream, std::string file_name, std::vector<std_msgs::Float64> to_print)
 {
-	file_stream
+	file_stream.open(file_name.c_str(), std::ofstream::app);
 
 	file_stream << "[";
 
-	for (int index = 0; index < to_print.length; index++)
+	for (int index = 0; index < to_print.size(); index++)
 	{
 		file_stream << to_print[index] << ", ";
 	} 
 	
 	file_stream << "]";
+
+	file_stream.close();
 }
 
+void print_array_doubles(std::ofstream file_stream, std::string file_name, std::vector<double> to_print)
+{
+	file_stream.open(file_name.c_str(), std::ofstream::app);
+
+	file_stream << "[";
+
+	for (int index = 0; index < to_print.size(); index++)
+	{
+		file_stream << to_print[index] << ", ";
+	} 
+	
+	file_stream << "]";
+
+	file_stream.close();
+}*/
+
 //write to file
-void write_to_file(std::string joint_state_file_name, int joint_state_vector_length, std::vector<sensor_msgs::JointState> joint_state_data, std::string efforts_file_name, int efforts_vector_length, std::vector<sensor_msgs::JointState> efforts_data, std::string pose_stamped_file_name, int pose_stamped_vector_length, std::vector<geometry_msgs::PoseStamped> pose_stamped_data)
+void write_to_file(std::string joint_state_file_name, int joint_state_vector_length, std::vector<sensor_msgs::JointState> joint_state_data, std::string efforts_file_name, int efforts_vector_length, std::vector<sensor_msgs::JointState> efforts_data, std::string pose_stamped_file_name, int pose_stamped_vector_length, std::vector<geometry_msgs::PoseStamped> pose_stamped_data, std::string wrench_stamped_file_name, int wrench_stamped_vector_length, std::vector<geometry_msgs::WrenchStamped> wrench_stamped_data)
 {
 	//set file up to be written to
 	std::ofstream joint_state_file_stream;
 	std::ofstream efforts_file_stream;
 	std::ofstream pose_stamped_file_stream;
+	std::ofstream wrench_stamped_file_stream;
 	joint_state_file_stream.open(joint_state_file_name.c_str(), std::ofstream::out);
 	efforts_file_stream.open(efforts_file_name.c_str(), std::ofstream::out);
 	pose_stamped_file_stream.open(pose_stamped_file_name.c_str(), std::ofstream::out);	
+	wrench_stamped_file_stream.open(wrench_stamped_file_name.c_str(), std::ofstream::out);	
 	
 	ros::spinOnce();
 	
 //	ROS_INFO_STREAM("Files should have been created");
 
-	//TODO: add data format
 	joint_state_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
 	efforts_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
-	pose_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/TwistStamped.html\nData format:\nHeader header\nTwist twist\n\n\n";
+	pose_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html\nData format:\nHeader header\nPose pose\n\n\n";
+	wrench_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/WrenchStamped.html\nData format:\nHeader header\nWrench wrench\n\n\n";
 
 	//store joint_state data
 	for (int index = 0; index < joint_state_vector_length; index++)
 	{
 		sensor_msgs::JointState current = joint_state_data[index];	
+		//TODO: make sure we don't need a method that writes the name (I don't think we do)
 		//pass in the vector 
-		joint_state_file_stream << current.name  << "\n";
+		//joint_state_file_stream << current.name  << "\n";
 
-		print_array(joint_state_file_stream, file_name, current.position);
-		print_array(joint_state_file_stream, file_name, current.velocity);
-		print_array(joint_state_file_stream, file_name, current.effort);
+	        joint_state_file_stream << "[";
+
+        	for (int index = 0; index < current.position.size(); index++)
+        	{
+                	joint_state_file_stream << current.velocity[index] << ", ";
+        	}
+
+		joint_state_file_stream << "]\n";
+
+		joint_state_file_stream << "[";
+
+                for (int index = 0; index < current.velocity.size(); index++)
+                {
+                        joint_state_file_stream << current.velocity[index] << ", ";
+                }
+
+                joint_state_file_stream << "]\n";
+
+//		print_array_doubles(joint_state_file_stream, joint_state_file_name, current.position);
+//		print_array_doubles(joint_state_file_stream, joint_state_file_name, current.velocity);
 	}
 			
 	//store efforts data
 	for (int index = 0; index < efforts_vector_length; index++)
 	{
+		sensor_msgs::JointState current = efforts_data[index];
 		//pass in the vector 
-		efforts_file_stream << efforts_data.at(index) << ", ";
+//		efforts_file_stream << efforts_data.at(index) << ", ";
+//		print_array(efforts_file_stream, efforts_file_name, current.effort);
+
+		efforts_file_stream << "[";
+
+                for (int index = 0; index < current.effort.size(); index++)
+                {
+                        efforts_file_stream << current.effort[index] << ", ";
+                }
+
+                efforts_file_stream << "]\n";
 	}
 
 	//store pose_stamped data 
 	for (int index = 0; index < pose_stamped_vector_length; index++)
 	{
+		geometry_msgs::PoseStamped current = pose_stamped_data[index];
 		//pass in the vector 
-		pose_stamped_file_stream << pose_stamped_data.at(index) << ", ";
+//		pose_stamped_file_stream << pose_stamped_data.at(index) << ", ";
+		//TODO: get w/x/y/z from pose.orientation and pose.position? 
+//		print_array(pose_stamped_file_stream, pose_stamped_file_name, current.pose);
+		pose_stamped_file_stream << current.pose.position.x;
+		pose_stamped_file_stream << current.pose.position.y;
+		pose_stamped_file_stream << current.pose.position.z;
+		pose_stamped_file_stream << current.pose.orientation.x;
+		pose_stamped_file_stream << current.pose.orientation.y;
+		pose_stamped_file_stream << current.pose.orientation.z;
+		pose_stamped_file_stream << current.pose.orientation.w;
+	}
+
+
+	for (int index = 0; index < wrench_stamped_vector_length; index++)
+	{
+		geometry_msgs::WrenchStamped current = wrench_stamped_data[index];		
+
+		pose_stamped_file_stream << current.wrench.force.x;
+		pose_stamped_file_stream << current.wrench.force.y;
+		pose_stamped_file_stream << current.wrench.force.z;
+		pose_stamped_file_stream << current.wrench.force.x;
+		pose_stamped_file_stream << current.wrench.force.y;
+		pose_stamped_file_stream << current.wrench.force.z;
 	}
 
 	joint_state_file_stream << "\n";
 	efforts_file_stream << "\n";
 	pose_stamped_file_stream << "\n";
+	wrench_stamped_file_stream << "\n";
 
 	joint_state_file_stream.close();
 	efforts_file_stream.close();
 	pose_stamped_file_stream.close();
+	wrench_stamped_file_stream.close();
 }
 
+//move the arm into the starting position
+void go_to_start(std::string message)
+{
+	std::cout << message;
+
+	while (true)
+	{
+		char c = std::cin.get();
+	
+		if (c == '\n')
+			break;
+
+		else if (c == 'q')
+		{
+			ros::shutdown();
+			exit(1);
+		}
+		else 
+		{
+			std::cout <<  message;
+		}
+	}
+}
 
 //call functions to get data
 int main(int argc, char **argv)
 {
+	//TODO: change the name? 
 	//name the node
 	ros::init(argc, argv, "behavior_1");
 
@@ -474,13 +664,25 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	//get starting position
+	std::string j_pos_filename = ros::package::getPath("robotic_comprehension_of_viscosity") + "/data/jointspace_position_db.txt";
+	std::string start_pos_filename = ros::package::getPath("robotic_comprehension_of_viscosity") + "/data/toolspace_position_db.txt";
+	ArmPositionDB positionDB(j_pos_filename, start_pos_filename);
+
+	//move the arm to a pose using MoveIt
+	go_to_start("Press [Enter] to move the arm to its starting position: ");
+	geometry_msgs::PoseStamped start_pose = positionDB.getToolPositionStamped("start","/mico_link_base");
+				
+	//now go to the pose
+	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, start_pose);
+
 	//start recording data
 	record_haptics = true;
 
-	int repetitions = 1, joint_state_vector_length = joint_state_data.size(), efforts_vector_length = efforts_data.size(), pose_stamped_vector_length = pose_stamped_data.size();
+	int repetitions = 1, joint_state_vector_length = joint_state_data.size(), efforts_vector_length = efforts_data.size(), pose_stamped_vector_length = pose_stamped_data.size(), wrench_stamped_vector_length = wrench_stamped_data.size();
 	double velocity = 1, pause_time = 3;
 	//the name of the csv file to store the data in 
-	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name, path = "/home/users/fri/viscosity_data/";
+	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name, wrench_stamped_file_name, path = "/home/users/fri/viscosity_data/";
 
 //	path = ros::robotic_comprehension_of_viscosity::getPath("roslib");
 
@@ -501,13 +703,14 @@ int main(int argc, char **argv)
 		joint_state_file_name = path + "up_and_down_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
 		efforts_file_name = path + "up_and_down_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
 		pose_stamped_file_name = path + "up_and_down_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		wrench_stamped_file_name = path + "up_and_down_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		//pause between trials
 		pause(node_handle, pause_time);
 		up_and_down(node_handle, velocity, repetitions);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
 	}
 	
 	//run trials for back_and_forth
@@ -516,26 +719,43 @@ int main(int argc, char **argv)
 		joint_state_file_name = path + "back_and_forth_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
 		efforts_file_name = path + "back_and_forth_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
 		pose_stamped_file_name = path + "back_and_forth_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		wrench_stamped_file_name = path + "back_and_forth_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
 		back_and_forth(node_handle, velocity, repetitions);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
 	}
 
-	//run trials for 
+	//run trials for circle
 	for (int trial = 1; trial <= iterations; trial++)
 	{
 		joint_state_file_name = path + "circle_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
 		efforts_file_name = path + "circle_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
 		pose_stamped_file_name = path + "circle_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		wrench_stamped_file_name = path + "circle_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
 		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
 		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
 		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
 		pause(node_handle, pause_time);
 		circle(node_handle, velocity, repetitions, .7);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
+	}
+
+	//run trials for twist
+	for (int trial = 1; trial <= iterations; trial++)
+	{
+		joint_state_file_name = path + "twist_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
+		efforts_file_name = path + "twist_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
+		pose_stamped_file_name = path + "twist_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		wrench_stamped_file_name = path + "twist_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
+		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
+		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
+		pause(node_handle, pause_time);
+		twist(node_handle, velocity, repetitions);
+		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
 	}
 
 	record_haptics = false;
