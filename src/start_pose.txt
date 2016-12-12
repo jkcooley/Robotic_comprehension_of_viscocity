@@ -1,0 +1,85 @@
+[0m[ INFO] [1481565005.875762192]: Current joint positions:[0m
+[0m[ INFO] [1481565005.875877681]: header: 
+  seq: 186129
+  stamp: 1481565005.866851078
+  frame_id: 
+name[]
+  name[0]: mico_joint_1
+  name[1]: mico_joint_2
+  name[2]: mico_joint_3
+  name[3]: mico_joint_4
+  name[4]: mico_joint_5
+  name[5]: mico_joint_6
+  name[6]: mico_joint_finger_1
+  name[7]: mico_joint_finger_2
+position[]
+  position[0]: 0.444674
+  position[1]: -1.08762
+  position[2]: 0.321474
+  position[3]: -2.97142
+  position[4]: 2.24671
+  position[5]: 0.753268
+  position[6]: 1.02648
+  position[7]: 1.02396
+velocity[]
+  velocity[0]: 0
+  velocity[1]: 0
+  velocity[2]: 0
+  velocity[3]: 0
+  velocity[4]: 0
+  velocity[5]: 0
+  velocity[6]: 0
+  velocity[7]: 0
+effort[]
+  effort[0]: 9.09903e+14
+  effort[1]: 9.4102e-08
+  effort[2]: -2.64914e-17
+  effort[3]: 4.59163e-41
+  effort[4]: -2.64914e-17
+  effort[5]: 4.59163e-41
+  effort[6]: 0
+  effort[7]: 0
+[0m
+[0m[ INFO] [1481565005.875896443]: Current joint efforts:[0m
+[0m[ INFO] [1481565005.875927626]: header: 
+  seq: 186128
+  stamp: 0.000000000
+  frame_id: 
+name[]
+  name[0]: jaco_joint_1
+  name[1]: jaco_joint_2
+  name[2]: jaco_joint_3
+  name[3]: jaco_joint_4
+  name[4]: jaco_joint_5
+  name[5]: jaco_joint_6
+position[]
+velocity[]
+effort[]
+  effort[0]: 0.141513
+  effort[1]: 0.0634103
+  effort[2]: 0.530755
+  effort[3]: -0.0689185
+  effort[4]: -0.217198
+  effort[5]: -0.132325
+[0m
+[0m[ INFO] [1481565005.875941776]: Current finger positions:[0m
+[0m[ INFO] [1481565005.875960689]: finger1: 7332
+finger2: 7314
+finger3: 0
+[0m
+[0m[ INFO] [1481565005.875973093]: Current tool pose:[0m
+[0m[ INFO] [1481565005.875998758]: header: 
+  seq: 186129
+  stamp: 1481565005.870896117
+  frame_id: mico_link_base
+pose: 
+  position: 
+    x: 0.276394
+    y: 0.0483711
+    z: 0.170524
+  orientation: 
+    x: 0.999658
+    y: -0.0130254
+    z: 0.00961342
+    w: 0.0205519
+[0m

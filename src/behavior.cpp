@@ -107,7 +107,7 @@ void wrench_stamped_callback(const geometry_msgs::WrenchStampedConstPtr &message
 }
 
 //moves the arm up and down (along the z-axis - keep in mind that the robot is tilted to stir)
-void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitions)
+void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitions, double duration)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -124,8 +124,6 @@ void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitio
 	{
 		velocity_message.twist.linear.z = velocity; 
 	
-		//run for 5 seconds
-		double duration = 5.0; 
 		double elapsed_time = 0.0;
 	
 		//publish at 40Hz
@@ -176,7 +174,7 @@ void up_and_down(ros::NodeHandle node_handle, double velocity, int num_repetitio
 
 
 //moves the arm back and forth (along the x-axis - keep in mind that the robot is tilted to stir)
-void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repetitions)
+void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repetitions, double duration)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
@@ -194,8 +192,6 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 	{
 		velocity_message.twist.linear.x = velocity;
 
-		//run for 5 seconds
-		double duration = 5.0; //5 seconds
 		double elapsed_time = 0.0;
 		
 		//publish at 40Hz
@@ -290,25 +286,23 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 }
 
 //moves the hand in a twisting motion for five seconds in either director (L and R)
-void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions)
+void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions, double duration)
 {
 	//publish the velocities
 	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 
 	//construct message
 	geometry_msgs::TwistStamped velocity_message;
+	velocity_message.twist.linear.x = 0.0; 
 	velocity_message.twist.linear.y = 0.0;
 	velocity_message.twist.linear.z = 0.0;
 	velocity_message.twist.angular.x = 0.0;
 	velocity_message.twist.angular.y = 0.0;
-	velocity_message.twist.angular.z = 0.0;
 
 	for(int rep = 0; rep < num_repetitions; rep++)
 	{
-		velocity_message.twist.linear.x = velocity; 
-	
-		//run for 5 seconds
-		double duration = 5.0;
+		velocity_message.twist.angular.z = velocity;
+
 		double elapsed_time = 0.0;
 	
 		//we publish at 40Hz
@@ -331,7 +325,7 @@ void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions)
 				break;
 		}
 		
-		velocity_message.twist.linear.z = velocity * -1;
+		velocity_message.twist.angular.z = velocity * -1;
 	
 		elapsed_time = 0.0;
 
@@ -353,7 +347,7 @@ void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions)
 	}
 
 	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
-	velocity_message.twist.linear.x = 0.0; 
+	velocity_message.twist.angular.z = 0.0; 
 	pub_velocity.publish(velocity_message);
 }
 
@@ -429,8 +423,8 @@ int get_iterations(std::string message)
 	}
 }
 
-//get user input for the name of the liquid being tested
-std::string get_liquid(std::string message)
+//get user input for the name of the material being tested
+std::string get_material(std::string message)
 {
 	//print the message passed (tell the user what to input)
 	std::cout << message;
@@ -453,7 +447,7 @@ std::string get_liquid(std::string message)
 		//return the user input (should be the name of the liquid)
 		else 
 		{
-			ROS_INFO_STREAM("liquid: " << input);
+			ROS_INFO_STREAM("material: " << input);
 	
 			return input;
 		}
@@ -588,7 +582,7 @@ void go_to_start(std::string message)
 //call functions to get data
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "behaviors");
+	ros::init(argc, argv, "behavior");
 
 	ros::NodeHandle node_handle;
 
@@ -601,11 +595,13 @@ int main(int argc, char **argv)
 	//publish the velocities
 	ros::Publisher velocity_publisher = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
 	
-	std::string liquid = get_liquid("Enter the name of the liquid being tested: ");
+	std::string liquid = get_material("Enter the name of the substance being tested: ");
+
+	std::string stir = get_material("Enter the type of material being used to stir: ");
 
 	int iterations = get_iterations("Enter the number of iterations to perform: ");
 	
-	if (liquid.compare("quit") == 0 || iterations == -1)
+	if (liquid.compare("quit") == 0 || stir.compare("quit") == 0 || iterations == -1)
 	{
 		return -1;
 	}
@@ -626,71 +622,79 @@ int main(int argc, char **argv)
 	record_haptics = true;
 
 	int repetitions = 1, joint_state_vector_length = joint_state_data.size(), efforts_vector_length = efforts_data.size(), pose_stamped_vector_length = pose_stamped_data.size(), wrench_stamped_vector_length = wrench_stamped_data.size();
-	double velocity = 1, pause_time = 3;
+	double velocity = .1, pause_time = 3, duration = 2;
 	//the name of the csv file to store the data in 
 	std::string joint_state_file_name, efforts_file_name, pose_stamped_file_name, wrench_stamped_file_name, path = "/home/users/fri/viscosity_data/";
 
-	//run trials for up_and_down
-	for (int trial = 1; trial <= iterations; trial++)
+	for (int run = 1; run < 5; run++)
 	{
-		//TODO: initialize empty vectors for each topic
-		//TODO: replace hapctics...maybe make this a method?
-		joint_state_file_name = path + "up_and_down_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = path + "up_and_down_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = path + "up_and_down_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		wrench_stamped_file_name = path + "up_and_down_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
-		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
-		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
-		//pause between trials
-		pause(node_handle, pause_time);
-		up_and_down(node_handle, velocity, repetitions);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
-	}
+		//run trials for up_and_down
+		for (int trial = 1; trial <= iterations; trial++)
+		{
+			joint_state_file_name = path + "up_and_down_" + stir + "_stir_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			efforts_file_name = path + "up_and_down_" + stir + "_stir_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			pose_stamped_file_name = path + "up_and_down_" + stir + "_stir_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			wrench_stamped_file_name = path + "up_and_down_" + stir + "_stir_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
+			ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+			ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
+			ROS_INFO_STREAM("wrench_stamped_file_name: " << wrench_stamped_file_name);
+			//pause between trials
+			pause(node_handle, pause_time);
+			up_and_down(node_handle, velocity, repetitions, duration);
+			write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
+		}	
 	
-	//run trials for back_and_forth
-	for (int trial = 1; trial <= iterations; trial++)
-	{
-		joint_state_file_name = path + "back_and_forth_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = path + "back_and_forth_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = path + "back_and_forth_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		wrench_stamped_file_name = path + "back_and_forth_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
-		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
-		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
-		pause(node_handle, pause_time);
-		back_and_forth(node_handle, velocity, repetitions);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
+			//run trials for back_and_forth
+			for (int trial = 1; trial <= iterations; trial++)
+			{
+			joint_state_file_name = path + "back_and_forth_" + stir + "_stir_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			efforts_file_name = path + "back_and_forth_" + stir + "_stir_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			pose_stamped_file_name = path + "back_and_forth_" + stir + "_stir_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			wrench_stamped_file_name = path + "back_and_forth_" + stir + "_stir_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
+			ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+			ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
+			ROS_INFO_STREAM("wrench_stamped_file_name: " << wrench_stamped_file_name);
+			pause(node_handle, pause_time);
+			back_and_forth(node_handle, velocity, repetitions, duration);
+			write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
 	}
 
-	//run trials for circle
-	for (int trial = 1; trial <= iterations; trial++)
-	{
-		joint_state_file_name = path + "circle_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = path + "circle_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = path + "circle_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		wrench_stamped_file_name = path + "circle_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
-		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
-		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
-		pause(node_handle, pause_time);
-		circle(node_handle, velocity, repetitions, .7);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
-	}
+		//run trials for circle
+		for (int trial = 1; trial <= iterations; trial++)
+		{
+			joint_state_file_name = path + "circle_" + stir + "_stir_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			efforts_file_name = path + "circle_" + stir + "_stir_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			pose_stamped_file_name = path + "circle_" + stir + "_stir_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			wrench_stamped_file_name = path + "circle_" + stir + "_stir_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
+			ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+			ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
+			ROS_INFO_STREAM("wrench_stamped_file_name: " << wrench_stamped_file_name);
+			pause(node_handle, pause_time);
+			circle(node_handle, velocity, repetitions, .05);
+			write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
+		}
 
-	//run trials for twist
-	for (int trial = 1; trial <= iterations; trial++)
-	{
-		joint_state_file_name = path + "twist_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + ".csv";
-		efforts_file_name = path + "twist_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + ".csv";
-		pose_stamped_file_name = path + "twist_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		wrench_stamped_file_name = path + "twist_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + ".csv";
-		ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
-		ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
-		ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
-		pause(node_handle, pause_time);
-		twist(node_handle, velocity, repetitions);
-		write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
+		//run trials for twist
+/*		for (int trial = 1; trial <= iterations; trial++)
+		{
+			joint_state_file_name = path + "twist_" + stir + "_stir_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			efforts_file_name = path + "twist_" + stir + "_stir_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			pose_stamped_file_name = path + "twist_" + stir + "_stir_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			wrench_stamped_file_name = path + "twist_" + stir + "_stir_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
+			ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
+			ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
+			ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
+			ROS_INFO_STREAM("wrench_stamped_file_name: " << wrench_stamped_file_name);
+			pause(node_handle, pause_time);
+//			twist(node_handle, velocity, repetitions, duration);
+			circle(node_handle, velocity, repetitions, .05);
+			write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
+		}*/
+	
+		velocity *= 2;
 	}
 
 	record_haptics = false;
