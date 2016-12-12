@@ -695,6 +695,7 @@ int main(int argc, char **argv)
 		}*/
 	
 		velocity *= 2;
+		duration /= 2;
 	}
 
 	record_haptics = false;
