@@ -190,7 +190,7 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 	
 	for (int i = 0; i < num_repetitions; i++)
 	{
-		velocity_message.twist.linear.x = velocity;
+		velocity_message.twist.linear.x = velocity * -1;
 
 		double elapsed_time = 0.0;
 		
@@ -214,7 +214,7 @@ void back_and_forth(ros::NodeHandle node_handle, double velocity, int num_repeti
 				break;
 		}
 			
-		velocity_message.twist.linear.x = velocity * -1;
+		velocity_message.twist.linear.x = velocity;
 		
 		elapsed_time = 0.0;
 
@@ -283,72 +283,6 @@ void circle(ros::NodeHandle node_handle, double velocity, int num_repetitions, d
 			r.sleep();
 		}
 	}
-}
-
-//moves the hand in a twisting motion for five seconds in either director (L and R)
-void twist(ros::NodeHandle node_handle, double velocity, int num_repetitions, double duration)
-{
-	//publish the velocities
-	ros::Publisher pub_velocity = node_handle.advertise<geometry_msgs::TwistStamped>("/mico_arm_driver/in/cartesian_velocity", 10);
-
-	//construct message
-	geometry_msgs::TwistStamped velocity_message;
-	velocity_message.twist.linear.x = 0.0; 
-	velocity_message.twist.linear.y = 0.0;
-	velocity_message.twist.linear.z = 0.0;
-	velocity_message.twist.angular.x = 0.0;
-	velocity_message.twist.angular.y = 0.0;
-
-	for(int rep = 0; rep < num_repetitions; rep++)
-	{
-		velocity_message.twist.angular.z = velocity;
-
-		double elapsed_time = 0.0;
-	
-		//we publish at 40Hz
-		double pub_rate = 40.0;
-		ros::Rate r(pub_rate);
-	
-		while (ros::ok())
-		{
-			//collect messages
-			ros::spinOnce();
-		
-			//publish velocity message
-			pub_velocity.publish(velocity_message);
-		
-			r.sleep();
-		
-			elapsed_time += (1.0/pub_rate);
-		
-			if (elapsed_time > duration)
-				break;
-		}
-		
-		velocity_message.twist.angular.z = velocity * -1;
-	
-		elapsed_time = 0.0;
-
-		while (ros::ok())
-		{
-			//collect messages
-			ros::spinOnce();
-		
-			//publish velocity message
-			pub_velocity.publish(velocity_message);
-		
-			r.sleep();
-		
-			elapsed_time += (1.0/pub_rate);
-		
-			if (elapsed_time > duration)
-				break;
-		}
-	}
-
-	//publish 0 velocity command -- otherwise arm will continue moving with the last command for 0.25 seconds
-	velocity_message.twist.angular.z = 0.0; 
-	pub_velocity.publish(velocity_message);
 }
 
 //publish all 0s (for space between the actions)
@@ -466,82 +400,117 @@ void write_to_file(std::string joint_state_file_name, int joint_state_vector_len
 	efforts_file_stream.open(efforts_file_name.c_str(), std::ofstream::out);
 	pose_stamped_file_stream.open(pose_stamped_file_name.c_str(), std::ofstream::out);	
 	wrench_stamped_file_stream.open(wrench_stamped_file_name.c_str(), std::ofstream::out);	
+
+//	std::cout << "joint_state_data.size(): " << joint_state_data.size() << "\n\n";
 	
-	ros::spinOnce();
+//	ros::spinOnce();
 	
-	joint_state_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
-	efforts_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
-	pose_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html\nData format:\nHeader header\nPose pose\n\n\n";
-	wrench_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/WrenchStamped.html\nData format:\nHeader header\nWrench wrench\n\n\n";
+//	joint_state_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
+//	efforts_file_stream << "http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html\nData format:\nHeader header\nstring[] name\nfloat64[] position\nfloat64[] velocity\nfloat64[] effort\n\n\n";
+//	pose_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html\nData format:\nHeader header\nPose pose\n\n\n";
+//	wrench_stamped_file_stream << "http://docs.ros.org/api/geometry_msgs/html/msg/WrenchStamped.html\nData format:\nHeader header\nWrench wrench\n\n\n";
 
 	//store joint_state_data
-	for (int index = 0; index < joint_state_vector_length; index++)
+	for (int index = 0; index < (int)joint_state_data.size(); index++)
 	{
-		sensor_msgs::JointState current = joint_state_data[index];	
+		//ROS_INFO("index: %d", index);
 
-	        joint_state_file_stream << "[";
+		sensor_msgs::JointState current = joint_state_data[index];	
+		joint_state_file_stream << current.header.stamp.sec;
+		joint_state_file_stream << ",";
+		joint_state_file_stream << current.header.stamp.nsec;
+		joint_state_file_stream << ",";
 
         	for (int index = 0; index < current.position.size(); index++)
         	{
-                	joint_state_file_stream << current.velocity[index] << ", ";
+                	joint_state_file_stream << current.position[index];
+
+			if (index != (current.position.size() - 1))
+			{
+				joint_state_file_stream << ",";
+			}
         	}
-
-		joint_state_file_stream << "]\n";
-
-		joint_state_file_stream << "[";
 
                 for (int index = 0; index < current.velocity.size(); index++)
                 {
-                        joint_state_file_stream << current.velocity[index] << ", ";
+                        joint_state_file_stream << current.velocity[index];
+			
+			if (index != (current.velocity.size() - 1))
+			{
+				joint_state_file_stream << ",";
+			}			
                 }
 
-                joint_state_file_stream << "]\n";
+                joint_state_file_stream << "\n";
 	}
 			
 	//store efforts_data
-	for (int index = 0; index < efforts_vector_length; index++)
+	for (int index = 0; index < (int)efforts_data.size(); index++)
 	{
 		sensor_msgs::JointState current = efforts_data[index];
 
-		efforts_file_stream << "[";
+		efforts_file_stream << current.header.stamp.sec;
+		efforts_file_stream << ",";
+		efforts_file_stream << current.header.stamp.nsec;
+		efforts_file_stream << ",";
+
 
                 for (int index = 0; index < current.effort.size(); index++)
                 {
-                        efforts_file_stream << current.effort[index] << ", ";
+                        efforts_file_stream << current.effort[index];
+	
+			if (index != (current.effort.size() - 1))
+			{
+				efforts_file_stream << ",";
+			}		
                 }
 
-                efforts_file_stream << "]\n";
+                efforts_file_stream << "\n";
 	}
 
 	//store pose_stamped_data 
-	for (int index = 0; index < pose_stamped_vector_length; index++)
+	for (int index = 0; index < (int)pose_stamped_data.size(); index++)
 	{
 		geometry_msgs::PoseStamped current = pose_stamped_data[index];
 
 		pose_stamped_file_stream << current.header.stamp.sec;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.header.stamp.nsec;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.pose.position.x;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.pose.position.y;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.pose.position.z;
 		pose_stamped_file_stream << current.pose.orientation.x;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.pose.orientation.y;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.pose.orientation.z;
+		pose_stamped_file_stream << ",";
 		pose_stamped_file_stream << current.pose.orientation.w;
 	}
 
 	//store wrench_stamped_data
-	for (int index = 0; index < wrench_stamped_vector_length; index++)
+	for (int index = 0; index < (int)wrench_stamped_data.size(); index++)
 	{
 		geometry_msgs::WrenchStamped current = wrench_stamped_data[index];		
 	
 		wrench_stamped_file_stream << current.header.stamp.sec;
+		wrench_stamped_file_stream << ",";
 		wrench_stamped_file_stream << current.header.stamp.nsec;
-		pose_stamped_file_stream << current.wrench.force.x;
-		pose_stamped_file_stream << current.wrench.force.y;
-		pose_stamped_file_stream << current.wrench.force.z;
-		pose_stamped_file_stream << current.wrench.force.x;
-		pose_stamped_file_stream << current.wrench.force.y;
-		pose_stamped_file_stream << current.wrench.force.z;
+		wrench_stamped_file_stream << ",";
+		wrench_stamped_file_stream << current.wrench.force.x;
+		wrench_stamped_file_stream << ",";
+		wrench_stamped_file_stream << current.wrench.force.y;
+		wrench_stamped_file_stream << ",";
+		wrench_stamped_file_stream << current.wrench.force.z;
+		wrench_stamped_file_stream << ",";
+		wrench_stamped_file_stream << current.wrench.force.x;
+		wrench_stamped_file_stream << ",";
+		wrench_stamped_file_stream << current.wrench.force.y;
+		wrench_stamped_file_stream << ",";
+		wrench_stamped_file_stream << current.wrench.force.z;
 	}
 
 	joint_state_file_stream << "\n";
@@ -553,30 +522,6 @@ void write_to_file(std::string joint_state_file_name, int joint_state_vector_len
 	efforts_file_stream.close();
 	pose_stamped_file_stream.close();
 	wrench_stamped_file_stream.close();
-}
-
-//move the arm into the starting position
-void go_to_start(std::string message)
-{
-	std::cout << message;
-
-	while (true)
-	{
-		char c = std::cin.get();
-	
-		if (c == '\n')
-			break;
-
-		else if (c == 'q')
-		{
-			ros::shutdown();
-			exit(1);
-		}
-		else 
-		{
-			std::cout <<  message;
-		}
-	}
 }
 
 //call functions to get data
@@ -612,10 +557,11 @@ int main(int argc, char **argv)
 	ArmPositionDB positionDB(j_pos_filename, start_pos_filename);
 
 	//move the arm to a pose using MoveIt
-	go_to_start("Press [Enter] to move the arm to its starting position: ");
+//	go_to_start("Press [Enter] to move the arm to its starting position: ");
 	geometry_msgs::PoseStamped start_pose = positionDB.getToolPositionStamped("start","/mico_link_base");
 				
 	//now go to the pose
+	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, start_pose);
 	segbot_arm_manipulation::moveToPoseMoveIt(node_handle, start_pose);
 
 	//start recording data
@@ -677,23 +623,6 @@ int main(int argc, char **argv)
 			write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
 		}
 
-		//run trials for twist
-/*		for (int trial = 1; trial <= iterations; trial++)
-		{
-			joint_state_file_name = path + "twist_" + stir + "_stir_" + liquid + "_joint_state" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
-			efforts_file_name = path + "twist_" + stir + "_stir_" + liquid + "_efforts" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
-			pose_stamped_file_name = path + "twist_" + stir + "_stir_" + liquid + "_pose_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
-			wrench_stamped_file_name = path + "twist_" + stir + "_stir_" + liquid + "_wrench_stamped" + "_trial_" + boost::to_string(trial) + "_run_" + boost::to_string(run) + ".csv";
-			ROS_INFO_STREAM("joint_state_file_name: " << joint_state_file_name);
-			ROS_INFO_STREAM("efforts_file_name: " << efforts_file_name);
-			ROS_INFO_STREAM("pose_stamped_file_name: " << pose_stamped_file_name);
-			ROS_INFO_STREAM("wrench_stamped_file_name: " << wrench_stamped_file_name);
-			pause(node_handle, pause_time);
-//			twist(node_handle, velocity, repetitions, duration);
-			circle(node_handle, velocity, repetitions, .05);
-			write_to_file(joint_state_file_name, joint_state_vector_length, joint_state_data, efforts_file_name, efforts_vector_length, efforts_data, pose_stamped_file_name, pose_stamped_vector_length, pose_stamped_data, wrench_stamped_file_name, wrench_stamped_vector_length, wrench_stamped_data);
-		}*/
-	
 		velocity *= 2;
 		duration /= 2;
 	}
